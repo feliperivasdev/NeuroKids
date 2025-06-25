@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -162,7 +163,7 @@ class AuthController extends Controller
                 'contrasena_hash' => Hash::make($request->contrasena),
                 'rol_id' => $request->rol_id,
                 'institucion_id' => $request->institucion_id,
-                'fecha_creacion' => now(),
+                'fecha_creacion' => Carbon::now(),
                 'estado' => true,
             ]);
 
@@ -486,7 +487,7 @@ class AuthController extends Controller
                 'contrasena_hash' => Hash::make($request->contrasena),
                 'rol_id' => 3, // Rol de estudiante (asumiendo que 3 = estudiante)
                 'institucion_id' => $request->institucion_id,
-                'fecha_creacion' => now(),
+                'fecha_creacion' => Carbon::now(),
                 'estado' => true,
             ]);
 
@@ -531,7 +532,7 @@ class AuthController extends Controller
             // Intentar obtener instituciones de la base de datos
             if (class_exists('App\Models\Institucion')) {
                 $instituciones = \App\Models\Institucion::select('id', 'nombre')
-                    ->where('estado', true)
+                    
                     ->orderBy('nombre')
                     ->get();
             } else {

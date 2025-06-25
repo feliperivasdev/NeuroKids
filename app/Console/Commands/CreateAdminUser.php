@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Usuario;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class CreateAdminUser extends Command
 {
@@ -46,7 +47,7 @@ class CreateAdminUser extends Command
                 'contrasena_hash' => Hash::make($password),
                 'rol_id' => 1, // Administrador
                 'institucion_id' => 1, // Institución por defecto
-                'fecha_creacion' => now(),
+                'fecha_creacion' => Carbon::now(),
                 'estado' => true,
             ]);
 
