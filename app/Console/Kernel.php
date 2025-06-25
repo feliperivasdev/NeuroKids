@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\GenerateModelsFromDatabase::class,
+        \App\Console\Commands\CreateAdminUser::class,
+        \App\Console\Commands\CreateInstituciones::class,
     ];
 
     /**

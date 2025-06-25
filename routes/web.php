@@ -16,3 +16,35 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+
+/*
+|--------------------------------------------------------------------------
+| Auth Routes - API Privada
+|--------------------------------------------------------------------------
+|
+| Rutas para autenticación con JWT - Solo login es público
+|
+*/
+
+$router->group(['prefix' => 'api/auth'], function () use ($router) {
+    // Rutas públicas (sin autenticación)
+    $router->post('login', 'AuthController@login');
+    $router->post('register-student', 'AuthController@registerStudent');
+    $router->get('instituciones', 'AuthController@getInstituciones');
+    
+    // Rutas protegidas (requieren autenticación)
+    $router->group(['middleware' => 'auth:api'], function () use ($router) {
+        // Rutas para todos los usuarios autenticados
+        $router->get('me', 'AuthController@me');
+        $router->post('logout', 'AuthController@logout');
+        $router->post('refresh', 'AuthController@refresh');
+        $router->post('change-password', 'AuthController@changePassword');
+        
+        // Rutas solo para administradores (rol_id = 1)
+        $router->group(['middleware' => 'admin'], function () use ($router) {
+            $router->post('create-user', 'AuthController@createUser');
+            $router->post('generate-token', 'AuthController@generateToken');
+            $router->get('users', 'AuthController@listUsers');
+        });
+    });
+});

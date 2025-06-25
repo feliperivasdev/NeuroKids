@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Usuario extends Model
+class Usuario extends Model implements JWTSubject
 {
-    use HasFactory;
+    use Authenticatable, HasFactory;
 
     /**
      * La tabla asociada al modelo.
@@ -58,5 +60,30 @@ class Usuario extends Model
     public function getKeyName()
     {
         return 'id';
+    }
+
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [
+            'rol_id' => $this->rol_id,
+            'institucion_id' => $this->institucion_id,
+            'nombre' => $this->nombre,
+            'correo' => $this->correo
+        ];
     }
 }

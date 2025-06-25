@@ -80,6 +80,9 @@ $app->configure('auth');
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
+    'jwt.auth' => Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+    'jwt.refresh' => Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
+    'admin' => App\Http\Middleware\AdminMiddleware::class,
 ]);
 
 /*

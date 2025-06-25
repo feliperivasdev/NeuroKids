@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Institucione extends Model
+class Institucion extends Model
 {
     use HasFactory;
 
@@ -21,14 +21,9 @@ class Institucione extends Model
      *
      * @var array
      */
-    protected $fillable = ['nombre', 'direccion', 'correo_contacto', 'telefono_contacto', 'fecha_creacion'];
-
-    /**
-     * Los atributos que deben ocultarse para arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [''];
+    protected $fillable = [
+        'nombre', 'direccion', 'telefono', 'email', 'estado'
+    ];
 
     /**
      * Los atributos que deben ser convertidos a tipos nativos.
@@ -36,8 +31,7 @@ class Institucione extends Model
      * @var array
      */
     protected $casts = [
-        'id' => 'integer',
-        'fecha_creacion' => 'datetime',
+        'estado' => 'boolean',
     ];
 
     /**
@@ -48,12 +42,10 @@ class Institucione extends Model
     public $timestamps = false;
 
     /**
-     * Obtiene el nombre de la clave primaria.
-     *
-     * @return string
+     * Relación con usuarios
      */
-    public function getKeyName()
+    public function usuarios()
     {
-        return 'id';
+        return $this->hasMany(Usuario::class, 'institucion_id');
     }
 }
