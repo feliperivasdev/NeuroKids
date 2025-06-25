@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Usuario extends Model
+class PruebasLectura extends Model
 {
     use HasFactory;
 
@@ -14,21 +14,21 @@ class Usuario extends Model
      *
      * @var string
      */
-    protected $table = 'usuarios';
+    protected $table = 'pruebas_lectura';
 
     /**
      * Los atributos que son asignables masivamente.
      *
      * @var array
      */
-    protected $fillable = ['nombre', 'correo', 'contrasena_hash', 'rol_id', 'institucion_id', 'fecha_creacion', 'estado'];
+    protected $fillable = ['titulo', 'descripcion', 'nivel', 'es_diagnostica', 'fecha_creacion'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
      *
      * @var array
      */
-    protected $hidden = ['contrasena_hash'];
+    protected $hidden = [''];
 
     /**
      * Los atributos que deben ser convertidos a tipos nativos.
@@ -37,10 +37,9 @@ class Usuario extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'rol_id' => 'integer',
-        'institucion_id' => 'integer',
+        'nivel' => 'integer',
+        'es_diagnostica' => 'boolean',
         'fecha_creacion' => 'datetime',
-        'estado' => 'boolean',
     ];
 
     /**

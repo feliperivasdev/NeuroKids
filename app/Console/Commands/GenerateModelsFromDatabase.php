@@ -72,7 +72,7 @@ class GenerateModelsFromDatabase extends Command
         }
 
         $modelName = Str::studly(Str::singular($tableName));
-        $modelPath = app_path("Models/{$modelName}.php");
+        $modelPath = base_path("app/Models/{$modelName}.php");
 
         if (file_exists($modelPath)) {
             if (!$this->confirm("El modelo {$modelName} ya existe. ¿Deseas sobrescribirlo?")) {
@@ -100,10 +100,17 @@ class GenerateModelsFromDatabase extends Command
         $tables = [];
         $databaseName = DB::connection()->getDatabaseName();
         
-        $results = DB::select("SHOW TABLES FROM `{$databaseName}`");
+        // Consulta específica para PostgreSQL
+        $results = DB::select("
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_type = 'BASE TABLE'
+            ORDER BY table_name
+        ");
         
         foreach ($results as $result) {
-            $tables[] = array_values((array) $result)[0];
+            $tables[] = $result->table_name;
         }
 
         return $tables;
@@ -114,7 +121,19 @@ class GenerateModelsFromDatabase extends Command
      */
     private function getTableColumns($tableName)
     {
-        return DB::select("DESCRIBE `{$tableName}`");
+        // Consulta específica para PostgreSQL
+        return DB::select("
+            SELECT 
+                column_name as field,
+                data_type as type,
+                is_nullable as null,
+                column_default as default,
+                character_maximum_length as length
+            FROM information_schema.columns 
+            WHERE table_schema = 'public' 
+            AND table_name = ?
+            ORDER BY ordinal_position
+        ", [$tableName]);
     }
 
     /**
@@ -125,8 +144,7 @@ class GenerateModelsFromDatabase extends Command
         $fillable = [];
         
         foreach ($columns as $column) {
-            $column = (array) $column;
-            $field = $column['Field'];
+            $field = $column->field;
             
             // Excluir columnas comunes que no deberían ser fillable
             if (!in_array($field, ['id', 'created_at', 'updated_at', 'deleted_at'])) {
@@ -145,8 +163,7 @@ class GenerateModelsFromDatabase extends Command
         $hidden = [];
         
         foreach ($columns as $column) {
-            $column = (array) $column;
-            $field = $column['Field'];
+            $field = $column->field;
             
             // Incluir columnas sensibles en hidden
             if (in_array($field, ['password', 'contrasena', 'contrasena_hash', 'api_token'])) {
@@ -165,22 +182,21 @@ class GenerateModelsFromDatabase extends Command
         $casts = [];
         
         foreach ($columns as $column) {
-            $column = (array) $column;
-            $field = $column['Field'];
-            $type = $column['Type'];
+            $field = $column->field;
+            $type = $column->type;
             
-            // Determinar el cast basándose en el tipo de columna
-            if (str_contains($type, 'int')) {
+            // Determinar el cast basándose en el tipo de columna de PostgreSQL
+            if (str_contains($type, 'int') || str_contains($type, 'serial')) {
                 $casts[$field] = 'integer';
-            } elseif (str_contains($type, 'decimal') || str_contains($type, 'float')) {
+            } elseif (str_contains($type, 'decimal') || str_contains($type, 'numeric') || str_contains($type, 'real') || str_contains($type, 'double')) {
                 $casts[$field] = 'float';
-            } elseif (str_contains($type, 'datetime')) {
+            } elseif (str_contains($type, 'timestamp')) {
                 $casts[$field] = 'datetime';
             } elseif (str_contains($type, 'date')) {
                 $casts[$field] = 'date';
-            } elseif (str_contains($type, 'json')) {
+            } elseif (str_contains($type, 'json') || str_contains($type, 'jsonb')) {
                 $casts[$field] = 'array';
-            } elseif (str_contains($type, 'boolean') || str_contains($type, 'tinyint(1)')) {
+            } elseif (str_contains($type, 'boolean')) {
                 $casts[$field] = 'boolean';
             }
         }
@@ -201,6 +217,9 @@ class GenerateModelsFromDatabase extends Command
             $castsString .= "        '{$field}' => '{$cast}',\n";
         }
         $castsString .= "    ]";
+
+        // Verificar si la tabla tiene timestamps
+        $hasTimestamps = $this->tableHasTimestamps($tableName);
 
         return "<?php
 
@@ -246,7 +265,7 @@ class {$modelName} extends Model
      *
      * @var bool
      */
-    public \$timestamps = " . (in_array('created_at', array_column($this->getTableColumns($tableName), 'Field')) ? 'true' : 'false') . ";
+    public \$timestamps = " . ($hasTimestamps ? 'true' : 'false') . ";
 
     /**
      * Obtiene el nombre de la clave primaria.
@@ -259,5 +278,20 @@ class {$modelName} extends Model
     }
 }
 ";
+    }
+
+    /**
+     * Verifica si la tabla tiene columnas de timestamps
+     */
+    private function tableHasTimestamps($tableName)
+    {
+        $columns = $this->getTableColumns($tableName);
+        $columnNames = [];
+        
+        foreach ($columns as $column) {
+            $columnNames[] = $column->field;
+        }
+        
+        return in_array('created_at', $columnNames) && in_array('updated_at', $columnNames);
     }
 } 
