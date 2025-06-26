@@ -2,6 +2,7 @@
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://php.net)
 [![Lumen Version](https://img.shields.io/badge/Lumen-10.0+-green.svg)](https://lumen.laravel.com)
+[![Composer Version](https://img.shields.io/badge/Composer-2.4.0+-red.svg)](https://getcomposer.org)
 [![JWT Auth](https://img.shields.io/badge/JWT-Auth-orange.svg)](https://jwt-auth.readthedocs.io)
 
 API REST privada para el sistema Lectorix, construida con Lumen y JWT Authentication. Sistema híbrido que permite registro público de estudiantes y control administrativo total.
