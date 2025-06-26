@@ -48,3 +48,25 @@ $router->group(['prefix' => 'api/auth'], function () use ($router) {
         });
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Usuario Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de usuarios - Requieren autenticación
+|
+*/
+
+$router->group(['prefix' => 'api/usuarios', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'UsuarioController@index');
+    $router->get('/{id}', 'UsuarioController@show');
+    $router->put('/{id}', 'UsuarioController@update');
+    
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'UsuarioController@store');
+        $router->delete('/{id}', 'UsuarioController@disabled');
+    });
+});
