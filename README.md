@@ -29,7 +29,7 @@ API REST privada para el sistema Lectorix, construida con Lumen y JWT Authentica
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <tu-repositorio>
+git clone https://github.com/feliperivasdev/Lectorix_API.git
 cd Lectorix_API
 ```
 
