@@ -14,7 +14,7 @@ class CreateAdminUser extends Command
      *
      * @var string
      */
-    protected $signature = 'make:admin {--email=admin@lectorix.com : Email del administrador} {--password=admin123 : Contraseña del administrador} {--name=Administrador : Nombre del administrador}';
+    protected $signature = 'make:admin {--email=aslly@lectorix.com : Email del administrador} {--password=aslly123 : Contraseña del administrador}{--num_documento=1010116656 : Numero de documento del administrador} {--name=Aslly : Nombre del administrador} {--apellido=Zuñiga : Apellido del administrado} {--edad=24 : Edad del administrador}';
 
     /**
      * The console command description.
@@ -33,6 +33,9 @@ class CreateAdminUser extends Command
         $email = $this->option('email');
         $password = $this->option('password');
         $name = $this->option('name');
+        $apellido = $this->option('apellido');
+        $edad = $this->option('edad');
+        $num_documento = $this->option('num_documento');
 
         // Verificar si ya existe un usuario con ese email
         if (Usuario::where('correo', $email)->exists()) {
@@ -42,7 +45,10 @@ class CreateAdminUser extends Command
 
         try {
             $admin = Usuario::create([
+                'num_documento' => $num_documento,
                 'nombre' => $name,
+                'apellido' => $apellido,
+                'edad' => $edad,
                 'correo' => $email,
                 'contrasena_hash' => Hash::make($password),
                 'rol_id' => 1, // Administrador
