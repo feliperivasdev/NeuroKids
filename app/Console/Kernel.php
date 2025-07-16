@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\GenerateModelsFromDatabase::class,
         \App\Console\Commands\CreateAdminUser::class,
         \App\Console\Commands\CreateInstituciones::class,
+        \App\Console\Commands\GenerateAppKey::class,
     ];
 
     /**
