@@ -70,3 +70,23 @@ $router->group(['prefix' => 'api/usuarios', 'middleware' => 'auth:api'], functio
         $router->delete('/{id}', 'UsuarioController@disabled');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Juego Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de juegos - Requieren autenticación
+|
+*/
+
+$router->group(['prefix' => 'api/juegos', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'JuegoController@index');
+    $router->get('/{id}', 'JuegoController@show');
+
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'JuegoController@store');
+    });
+});
