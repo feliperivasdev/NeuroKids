@@ -31,6 +31,7 @@ $router->group(['prefix' => 'api/auth'], function () use ($router) {
     $router->post('login', 'AuthController@login');
     $router->post('register-student', 'AuthController@registerStudent');
     $router->get('instituciones', 'AuthController@getInstituciones');
+    $router->get('preguntas-lectura', 'authController@preguntasLectura');
     
     // Rutas protegidas (requieren autenticación)
     $router->group(['middleware' => 'auth:api'], function () use ($router) {
