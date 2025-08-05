@@ -14,7 +14,7 @@ class CreateAdminUser extends Command
      *
      * @var string
      */
-    protected $signature = 'make:admin {--email=felipe@lectorix.com : Email del administrador} {--password=felipe123 : Contraseña del administrador}{--num_documento=1085304560 : Numero de documento del administrador} {--name=Felipe : Nombre del administrador} {--apellido=Gustin : Apellido del administrado} {--edad=32 : Edad del administrador}';
+    protected $signature = 'make:admin {--email=aslly@lectorix.com : Email del administrador} {--password=aslly123 : Contraseña del administrador}{--num_documento=1010116656 : Numero de documento del administrador} {--name=Aslly : Nombre del administrador} {--apellido=Zuñiga : Apellido del administrado} {--edad=24 : Edad del administrador}';
 
     /**
      * The console command description.

@@ -1,15 +1,46 @@
-/* inicializar el archivo  */
+<?php
 
-/* hacer las importaciones necesarias */
+namespace App\Http\Controllers;
 
-/* crear la clase */
+use App\Models\PreguntasLectura;
+use Illuminate\Http\Request;
 
-/* crear el constructor */
+class PreguntasLecturaController extends Controller
+{
+    public function index()
+    {
+        return response()->json(PreguntasLectura::all());
+    }
 
-/* crear el método index */
+    public function show($id)
+    {
+        $pregunta = PreguntasLectura::find($id);
+        if (!$pregunta) {
+            return response()->json(['success' => false, 'message' => 'Pregunta no encontrada'], 404);
+        }
+        return response()->json(['success' => true, 'message' => 'Pregunta obtenida correctamente', 'data' => $pregunta]);
+    }
 
-/* crear el método show */
+    public function store(Request $request)
+    {
+        $this->validate($request, [
+            'prueba_id' => 'required|integer',
+            'texto_pregunta' => 'required|string|max:255',
+            'respuesta_correcta' => 'required|string|max:255',
+            'orden' => 'required|integer',
+        ]);
 
-/* crear el método store */
+        $pregunta = new PreguntasLectura();
+        $pregunta->prueba_id = $request->prueba_id;
+        $pregunta->texto_pregunta = $request->texto_pregunta;
+        $pregunta->respuesta_correcta = $request->respuesta_correcta;
+        $pregunta->orden = $request->orden;
+        $pregunta->save();
 
-/*Tatiana
+        return response()->json([
+            'success' => true,
+            'message' => 'Pregunta creada correctamente',
+            'data' => $pregunta
+        ], 201);
+    }
+}
