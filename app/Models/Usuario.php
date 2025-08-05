@@ -24,7 +24,7 @@ class Usuario extends Model implements AuthenticatableContract, JWTSubject
      *
      * @var array
      */
-    protected $fillable = ['num_documento', 'nombre', 'apellido', 'edad', 'correo', 'contrasena_hash', 'rol_id', 'institucion_id', 'fecha_creacion', 'estado'];
+    protected $fillable = ['num_documento', 'nombre', 'apellido', 'edad', 'correo', 'contrasena_hash', 'codigo_estudiante', 'rol_id', 'institucion_id', 'fecha_creacion', 'estado'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
@@ -88,5 +88,98 @@ class Usuario extends Model implements AuthenticatableContract, JWTSubject
     public function getAuthPassword()
     {
         return $this->contrasena_hash;
+    }
+
+    /**
+     * Relación con institución
+     */
+    public function institucion()
+    {
+        return $this->belongsTo(Institucion::class, 'institucion_id');
+    }
+
+    /**
+     * Generar código único de estudiante
+     *
+     * @param int $institucion_id
+     * @param string $nombre
+     * @param string $apellido
+     * @return string
+     */
+    public static function generarCodigoEstudiante($institucion_id, $nombre, $apellido)
+    {
+        // Obtener código de institución (formato: INST + ID con padding)
+        $codigoInstitucion = 'INST' . str_pad($institucion_id, 3, '0', STR_PAD_LEFT);
+        
+        // Limpiar nombre y apellido (sin espacios, acentos, solo caracteres alfanuméricos)
+        $nombreLimpio = self::limpiarTexto($nombre);
+        $apellidoLimpio = self::limpiarTexto($apellido);
+        
+        // Crear base del código
+        $codigoBase = $codigoInstitucion . '_' . $nombreLimpio . '_' . $apellidoLimpio;
+        
+        // Verificar si ya existe y agregar contador si es necesario
+        $contador = 1;
+        $codigoFinal = $codigoBase;
+        
+        while (self::where('codigo_estudiante', $codigoFinal)->exists()) {
+            $codigoFinal = $codigoBase . '_' . $contador;
+            $contador++;
+        }
+        
+        return $codigoFinal;
+    }
+    
+    /**
+     * Limpiar texto para código de estudiante
+     *
+     * @param string $texto
+     * @return string
+     */
+    private static function limpiarTexto($texto)
+    {
+        // Convertir a mayúsculas
+        $texto = strtoupper($texto);
+        
+        // Remover acentos y caracteres especiales
+        $texto = strtr($texto, [
+            'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U',
+            'Ñ' => 'N', 'Ü' => 'U'
+        ]);
+        
+        // Mantener solo letras y números
+        $texto = preg_replace('/[^A-Z0-9]/', '', $texto);
+        
+        return $texto;
+    }
+
+    /**
+     * Verificar si es estudiante
+     *
+     * @return bool
+     */
+    public function esEstudiante()
+    {
+        return $this->rol_id === 3;
+    }
+
+    /**
+     * Verificar si es admin
+     *
+     * @return bool
+     */
+    public function esAdmin()
+    {
+        return $this->rol_id === 1;
+    }
+
+    /**
+     * Verificar si es institución
+     *
+     * @return bool
+     */
+    public function esInstitucion()
+    {
+        return $this->rol_id === 2;
     }
 }

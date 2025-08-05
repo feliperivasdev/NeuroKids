@@ -19,22 +19,20 @@ $router->get('/', function () use ($router) {
 
 /*
 |--------------------------------------------------------------------------
-| Auth Routes - API Privada
+| Admin Auth Routes - API Panel Administrativo
 |--------------------------------------------------------------------------
 |
-| Rutas para autenticación con JWT - Solo login es público
+| Rutas para autenticación de administradores e instituciones
 |
 */
 
-$router->group(['prefix' => 'api/auth'], function () use ($router) {
+$router->group(['prefix' => 'api/admin'], function () use ($router) {
     // Rutas públicas (sin autenticación)
     $router->post('login', 'AuthController@login');
-    $router->post('register-student', 'AuthController@registerStudent');
-    $router->get('instituciones', 'AuthController@getInstituciones');
     
     // Rutas protegidas (requieren autenticación)
     $router->group(['middleware' => 'auth:api'], function () use ($router) {
-        // Rutas para todos los usuarios autenticados
+        // Rutas para todos los usuarios autenticados (admin/instituciones)
         $router->get('me', 'AuthController@me');
         $router->post('logout', 'AuthController@logout');
         $router->post('refresh', 'AuthController@refresh');
@@ -46,6 +44,29 @@ $router->group(['prefix' => 'api/auth'], function () use ($router) {
             $router->post('generate-token', 'AuthController@generateToken');
             $router->get('users', 'AuthController@listUsers');
         });
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Student Auth Routes - API Panel de Estudiantes
+|--------------------------------------------------------------------------
+|
+| Rutas para autenticación de estudiantes (nombre + apellido)
+|
+*/
+
+$router->group(['prefix' => 'api/students'], function () use ($router) {
+    // Rutas públicas (sin autenticación)
+    $router->post('login', 'StudentAuthController@loginStudent');
+    $router->post('register', 'StudentAuthController@registerStudent');
+    $router->get('search', 'StudentAuthController@searchStudents');
+    $router->get('instituciones', 'StudentAuthController@getInstituciones');
+    
+    // Rutas protegidas (requieren autenticación de estudiante)
+    $router->group(['middleware' => 'auth:api'], function () use ($router) {
+        $router->get('me', 'StudentAuthController@me');
+        $router->post('logout', 'StudentAuthController@logout');
     });
 });
 

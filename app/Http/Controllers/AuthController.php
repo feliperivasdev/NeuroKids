@@ -18,8 +18,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        // Login, registro de estudiantes e instituciones son públicos, el resto requiere autenticación
-        $this->middleware('auth:api', ['except' => ['login', 'registerStudent', 'getInstituciones']]);
+        // Solo login es público para administradores e instituciones
+        $this->middleware('auth:api', ['except' => ['login']]);
     }
 
     /**
@@ -58,6 +58,14 @@ class AuthController extends Controller
                     'success' => false,
                     'message' => 'Credenciales inválidas'
                 ], 401);
+            }
+
+            // Verificar que no sea estudiante (rol_id = 3)
+            if ($usuario->rol_id === 3) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Los estudiantes no pueden acceder por este panel. Usa el panel de estudiantes.'
+                ], 403);
             }
 
             // Verificar si el usuario está activo
@@ -447,119 +455,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Registro público de estudiantes
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function registerStudent(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255',
-            'correo' => 'required|string|email|max:255|unique:usuarios',
-            'contrasena' => 'required|string|min:6|confirmed',
-            'institucion_id' => 'required|integer|exists:instituciones,id',
-        ], [
-            'nombre.required' => 'El nombre es obligatorio',
-            'correo.required' => 'El correo es obligatorio',
-            'correo.email' => 'El correo debe tener un formato válido',
-            'correo.unique' => 'El correo ya está registrado',
-            'contrasena.required' => 'La contraseña es obligatoria',
-            'contrasena.min' => 'La contraseña debe tener al menos 6 caracteres',
-            'contrasena.confirmed' => 'Las contraseñas no coinciden',
-            'institucion_id.required' => 'La institución es obligatoria',
-            'institucion_id.exists' => 'La institución seleccionada no existe',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            $estudiante = Usuario::create([
-                'nombre' => $request->nombre,
-                'correo' => $request->correo,
-                'contrasena_hash' => Hash::make($request->contrasena),
-                'rol_id' => 3, // Rol de estudiante (asumiendo que 3 = estudiante)
-                'institucion_id' => $request->institucion_id,
-                'fecha_creacion' => Carbon::now(),
-                'estado' => true,
-            ]);
-
-            // Generar token automáticamente después del registro
-            $token = JWTAuth::fromUser($estudiante);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Estudiante registrado exitosamente',
-                'data' => [
-                    'usuario' => [
-                        'id' => $estudiante->id,
-                        'nombre' => $estudiante->nombre,
-                        'correo' => $estudiante->correo,
-                        'rol_id' => $estudiante->rol_id,
-                        'institucion_id' => $estudiante->institucion_id,
-                        'estado' => $estudiante->estado,
-                    ],
-                    'token' => $token,
-                    'token_type' => 'bearer',
-                    'expires_in' => auth('api')->factory()->getTTL() * 60
-                ]
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar el estudiante',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Obtener instituciones disponibles (público)
-     *
-     * @return JsonResponse
-     */
-    public function getInstituciones(): JsonResponse
-    {
-        try {
-            // Intentar obtener instituciones de la base de datos
-            if (class_exists('App\Models\Institucion')) {
-                $instituciones = \App\Models\Institucion::select('id', 'nombre')
-                    
-                    ->orderBy('nombre')
-                    ->get();
-            } else {
-                // Fallback con datos hardcodeados si no existe el modelo
-                $instituciones = collect([
-                    ['id' => 1, 'nombre' => 'Universidad Nacional'],
-                    ['id' => 2, 'nombre' => 'Universidad de los Andes'],
-                    ['id' => 3, 'nombre' => 'Universidad Javeriana'],
-                    ['id' => 4, 'nombre' => 'Universidad Externado'],
-                    ['id' => 5, 'nombre' => 'Universidad del Rosario'],
-                ]);
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'instituciones' => $instituciones
-                ]
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener instituciones',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 }
 

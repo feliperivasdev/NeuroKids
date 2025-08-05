@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\CreateAdminUser::class,
         \App\Console\Commands\CreateInstituciones::class,
         \App\Console\Commands\GenerateAppKey::class,
+        \App\Console\Commands\GenerarCodigosEstudiantes::class,
     ];
 
     /**

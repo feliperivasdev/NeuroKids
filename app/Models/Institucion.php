@@ -22,7 +22,7 @@ class Institucion extends Model
      * @var array
      */
     protected $fillable = [
-        'nombre', 'direccion', 'telefono', 'email', 'estado'
+        'nombre', 'direccion', 'telefono', 'email'
     ];
 
     /**
@@ -31,7 +31,7 @@ class Institucion extends Model
      * @var array
      */
     protected $casts = [
-        'estado' => 'boolean',
+        //
     ];
 
     /**
