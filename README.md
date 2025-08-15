@@ -167,6 +167,56 @@ El sistema ahora está dividido en **dos paneles independientes**:
 -   `POST /usuarios` - Crear usuario (solo admin)
 -   `DELETE /usuarios/{id}` - Desactivar usuario (solo admin)
 
+#### 🎯 Gestión de Juegos
+
+-   `GET /juegos` - Listar todos los juegos
+-   `GET /juegos/{id}` - Ver juego específico
+-   `POST /juegos` - Crear juego (solo admin)
+
+#### 🏆 Gestión de Insignias
+
+-   `GET /insignias` - Listar todas las insignias
+-   `GET /insignias/{id}` - Ver insignia específica
+-   `POST /insignias` - Crear insignia (solo admin)
+-   `PUT /insignias/{id}` - Actualizar insignia (solo admin)
+-   `DELETE /insignias/{id}` - Eliminar insignia (solo admin)
+
+#### 🌟 Gestión de Usuarios Insignias
+
+-   `GET /usuarios-insignias` - Listar todas las asignaciones de insignias
+-   `GET /usuarios-insignias/usuario/{usuario_id}` - Ver insignias de un usuario
+-   `GET /usuarios-insignias/estadisticas/{usuario_id}` - Estadísticas de insignias de usuario
+-   `POST /usuarios-insignias` - Asignar insignia a usuario (solo admin)
+-   `DELETE /usuarios-insignias/{id}` - Remover insignia de usuario (solo admin)
+
+#### 📚 Gestión de Pruebas de Lectura
+
+-   `GET /pruebas-lectura` - Listar todas las pruebas de lectura
+-   `GET /pruebas-lectura/{id}` - Ver prueba específica
+-   `GET /pruebas-lectura/nivel/{nivel}` - Ver pruebas por nivel
+-   `GET /pruebas-lectura/diagnosticas` - Ver pruebas diagnósticas
+-   `POST /pruebas-lectura` - Crear prueba de lectura (solo admin)
+-   `PUT /pruebas-lectura/{id}` - Actualizar prueba de lectura (solo admin)
+-   `DELETE /pruebas-lectura/{id}` - Eliminar prueba de lectura (solo admin)
+
+#### 🎮 Gestión de Asignaciones de Juegos
+
+-   `GET /asignaciones-juegos` - Listar todas las asignaciones de juegos
+-   `GET /asignaciones-juegos/usuario/{usuario_id}` - Ver asignaciones de un usuario
+-   `GET /asignaciones-juegos/estadisticas/{usuario_id}` - Estadísticas de progreso de usuario
+-   `PUT /asignaciones-juegos/completar/{id}` - Marcar juego como completado
+-   `POST /asignaciones-juegos` - Asignar juego a usuario (solo admin)
+-   `PUT /asignaciones-juegos/{id}` - Actualizar asignación (solo admin)
+-   `DELETE /asignaciones-juegos/{id}` - Eliminar asignación (solo admin)
+
+#### 👤 Gestión de Roles
+
+-   `GET /roles` - Listar todos los roles (solo admin)
+-   `GET /roles/{id}` - Ver rol específico (solo admin)
+-   `POST /roles` - Crear rol (solo admin)
+-   `PUT /roles/{id}` - Actualizar rol (solo admin)
+-   `DELETE /roles/{id}` - Eliminar rol (solo admin)
+
 ### Ejemplos de Uso
 
 #### 🔐 Panel Administrativo
@@ -225,7 +275,104 @@ curl -X GET "http://localhost:8000/api/students/search?nombre=Juan&institucion_i
 ##### Obtener instituciones disponibles
 
 ```bash
-curl -X GET http://localhost:8000/api/students/instituciones
+curl -X GET  
+```
+
+#### 🏆 Ejemplos de Insignias
+
+##### Listar todas las insignias
+
+```bash
+curl -X GET http://localhost:8000/api/insignias \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+##### Crear una nueva insignia (solo admin)
+
+```bash
+curl -X POST http://localhost:8000/api/insignias \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "nombre": "Lector Principiante",
+    "descripcion": "Primera insignia por completar una lectura",
+    "url_icono": "https://ejemplo.com/icono.png",
+    "categoria": "Lectura",
+    "nivel_requerido": 1
+  }'
+```
+
+#### 🌟 Ejemplos de Asignación de Insignias
+
+##### Asignar insignia a un usuario (solo admin)
+
+```bash
+curl -X POST http://localhost:8000/api/usuarios-insignias \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "usuario_id": 1,
+    "insignia_id": 1
+  }'
+```
+
+##### Ver insignias de un usuario
+
+```bash
+curl -X GET http://localhost:8000/api/usuarios-insignias/usuario/1 \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+#### 📚 Ejemplos de Pruebas de Lectura
+
+##### Crear prueba de lectura (solo admin)
+
+```bash
+curl -X POST http://localhost:8000/api/pruebas-lectura \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "titulo": "Comprensión Lectora Nivel 1",
+    "descripcion": "Prueba básica de comprensión lectora",
+    "nivel": 1,
+    "es_diagnostica": false
+  }'
+```
+
+##### Obtener pruebas por nivel
+
+```bash
+curl -X GET http://localhost:8000/api/pruebas-lectura/nivel/1 \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+#### 🎮 Ejemplos de Asignaciones de Juegos
+
+##### Asignar juego a usuario (solo admin)
+
+```bash
+curl -X POST http://localhost:8000/api/asignaciones-juegos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "usuario_id": 1,
+    "juego_id": 1,
+    "nivel_asignado": 1
+  }'
+```
+
+##### Marcar juego como completado
+
+```bash
+curl -X PUT http://localhost:8000/api/asignaciones-juegos/completar/1 \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+##### Ver estadísticas de progreso de usuario
+
+```bash
+curl -X GET http://localhost:8000/api/asignaciones-juegos/estadisticas/1 \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
 ```
 
 ## 🏗️ Estructura del Proyecto

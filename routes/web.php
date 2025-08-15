@@ -111,3 +111,112 @@ $router->group(['prefix' => 'api/juegos', 'middleware' => 'auth:api'], function 
         $router->post('/', 'JuegoController@store');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Insignias Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de insignias - Requieren autenticación
+|
+*/
+
+$router->group(['prefix' => 'api/insignias', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'InsigniaController@index');
+    $router->get('/{id}', 'InsigniaController@show');
+
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'InsigniaController@store');
+        $router->put('/{id}', 'InsigniaController@update');
+        $router->delete('/{id}', 'InsigniaController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Usuarios Insignias Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de asignación de insignias a usuarios
+|
+*/
+
+$router->group(['prefix' => 'api/usuarios-insignias', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'UsuariosInsigniaController@index');
+    $router->get('/usuario/{usuario_id}', 'UsuariosInsigniaController@getByUser');
+    $router->get('/estadisticas/{usuario_id}', 'UsuariosInsigniaController@estadisticas');
+
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'UsuariosInsigniaController@store');
+        $router->delete('/{id}', 'UsuariosInsigniaController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Pruebas Lectura Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de pruebas de lectura - Requieren autenticación
+|
+*/
+
+$router->group(['prefix' => 'api/pruebas-lectura', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'PruebasLecturaController@index');
+    $router->get('/{id}', 'PruebasLecturaController@show');
+    $router->get('/nivel/{nivel}', 'PruebasLecturaController@getByNivel');
+    $router->get('/diagnosticas', 'PruebasLecturaController@getDiagnosticas');
+
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'PruebasLecturaController@store');
+        $router->put('/{id}', 'PruebasLecturaController@update');
+        $router->delete('/{id}', 'PruebasLecturaController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Asignaciones Juego Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de asignaciones de juegos a usuarios
+|
+*/
+
+$router->group(['prefix' => 'api/asignaciones-juegos', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'AsignacionesJuegoController@index');
+    $router->get('/usuario/{usuario_id}', 'AsignacionesJuegoController@getByUser');
+    $router->get('/estadisticas/{usuario_id}', 'AsignacionesJuegoController@estadisticasUsuario');
+    $router->put('/completar/{id}', 'AsignacionesJuegoController@completar');
+
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'AsignacionesJuegoController@store');
+        $router->put('/{id}', 'AsignacionesJuegoController@update');
+        $router->delete('/{id}', 'AsignacionesJuegoController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Roles Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de roles - Solo administradores
+|
+*/
+
+$router->group(['prefix' => 'api/roles', 'middleware' => ['auth:api', 'admin']], function () use ($router) {
+    $router->get('/', 'RolesController@index');
+    $router->get('/{id}', 'RolesController@show');
+    $router->post('/', 'RolesController@store');
+    $router->put('/{id}', 'RolesController@update');
+    $router->delete('/{id}', 'RolesController@destroy');
+});
