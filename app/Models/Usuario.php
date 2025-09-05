@@ -24,7 +24,7 @@ class Usuario extends Model implements AuthenticatableContract, JWTSubject
      *
      * @var array
      */
-    protected $fillable = ['num_documento', 'nombre', 'apellido', 'edad', 'correo', 'contrasena_hash', 'codigo_estudiante', 'rol_id', 'institucion_id', 'fecha_creacion', 'estado'];
+    protected $fillable = ['num_documento', 'nombre', 'apellido', 'edad', 'correo', 'contrasena_hash', 'codigo_estudiante', 'rol_id', 'institucion_id', 'fecha_creacion', 'estado', 'nivel_actual'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
@@ -43,6 +43,7 @@ class Usuario extends Model implements AuthenticatableContract, JWTSubject
         'rol_id' => 'integer',
         'institucion_id' => 'integer',
         'fecha_creacion' => 'datetime',
+        'nivel_actual' => 'integer',
     ];
 
     /**
@@ -181,5 +182,30 @@ class Usuario extends Model implements AuthenticatableContract, JWTSubject
     public function esInstitucion()
     {
         return $this->rol_id === 2;
+    }
+
+    /**
+     * Relación con insignias del usuario
+     */
+    public function insignias()
+    {
+        return $this->belongsToMany(Insignia::class, 'usuarios_insignias', 'usuario_id', 'insignia_id')
+                    ->withPivot('fecha_otorgada');
+    }
+
+    /**
+     * Relación con resultados de tests
+     */
+    public function resultadosTests()
+    {
+        return $this->hasMany(ResultadosTest::class, 'usuario_id');
+    }
+
+    /**
+     * Relación con asignaciones de juegos
+     */
+    public function asignacionesJuegos()
+    {
+        return $this->hasMany(AsignacionesJuego::class, 'usuario_id');
     }
 }

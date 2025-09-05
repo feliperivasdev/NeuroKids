@@ -18,6 +18,10 @@ API REST para el sistema Lectorix, construida con Lumen y JWT Authentication. Si
 -   **🔒 Rutas Protegidas** - Middleware de autenticación y roles
 -   **📊 Base de Datos PostgreSQL** - Compatible con NeonDB
 -   **⚡ Generación Automática de Modelos** - Comando personalizado para generar modelos desde la BD
+-   **🎯 Sistema de Progresión Automática** - Progresión estilo Duolingo con tests que se desbloquean automáticamente
+-   **🏆 Insignias Automáticas** - Sistema de gamificación que otorga insignias según el progreso del usuario
+-   **🎮 Selección Libre de Contenido** - Los usuarios pueden elegir juegos y lecturas disponibles
+-   **📈 Niveles Dinámicos** - Sistema de niveles que se actualiza automáticamente según el desempeño
 
 ## 📋 Requisitos
 
@@ -102,6 +106,12 @@ php artisan make:instituciones
 
 ```bash
 php artisan estudiantes:generar-codigos
+```
+
+### 10. Configurar sistema de progresión automática
+
+```bash
+php artisan progresion:configurar-inicial
 ```
 
 ## 🚀 Iniciar el servidor
@@ -275,7 +285,7 @@ curl -X GET "http://localhost:8000/api/students/search?nombre=Juan&institucion_i
 ##### Obtener instituciones disponibles
 
 ```bash
-curl -X GET  
+curl -X GET
 ```
 
 #### 🏆 Ejemplos de Insignias
@@ -375,6 +385,96 @@ curl -X GET http://localhost:8000/api/asignaciones-juegos/estadisticas/1 \
   -H "Authorization: Bearer TU_TOKEN_JWT"
 ```
 
+### 🎯 Ejemplos del Sistema de Progresión Automática
+
+#### Completar un test (desbloquea automáticamente nuevos tests y otorga insignias)
+
+```bash
+curl -X POST http://localhost:8000/api/progresion/completar-test \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "test_id": 1,
+    "puntuacion": 85,
+    "puntuacion_maxima": 100,
+    "tiempo_segundos": 300
+  }'
+```
+
+#### Ver tests disponibles para el usuario
+
+```bash
+curl -X GET http://localhost:8000/api/progresion/tests-disponibles \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+#### Ver progreso general del usuario
+
+```bash
+curl -X GET http://localhost:8000/api/progresion/progreso-general \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+#### Auto-asignar un juego (el usuario lo elige)
+
+```bash
+curl -X POST http://localhost:8000/api/progresion/auto-asignar-juego \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "juego_id": 1
+  }'
+```
+
+#### Ver juegos disponibles para elegir
+
+```bash
+curl -X GET http://localhost:8000/api/progresion/juegos-disponibles \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+#### Ver lecturas disponibles para elegir
+
+```bash
+curl -X GET http://localhost:8000/api/progresion/lecturas-disponibles \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+### 🏆 Ejemplos de Condiciones Automáticas de Insignias
+
+#### Crear condición automática para insignia
+
+```bash
+curl -X POST http://localhost:8000/api/condiciones-insignia \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "insignia_id": 1,
+    "tipo_condicion": "tests_completados",
+    "valor_requerido": 5,
+    "descripcion": "Completar 5 tests exitosamente"
+  }'
+```
+
+#### Ver tipos de condiciones disponibles
+
+```bash
+curl -X GET http://localhost:8000/api/condiciones-insignia/tipos-condiciones \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+#### Crear condiciones predeterminadas para una insignia
+
+```bash
+curl -X POST http://localhost:8000/api/condiciones-insignia/predeterminadas \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "insignia_id": 1,
+    "tipo_insignia": "principiante"
+  }'
+```
+
 ## 🏗️ Estructura del Proyecto
 
 ```
@@ -429,6 +529,12 @@ php artisan make:instituciones
 # Generar códigos únicos para estudiantes
 php artisan estudiantes:generar-codigos
 php artisan estudiantes:generar-codigos --force
+
+# Configurar sistema de progresión automática
+php artisan progresion:configurar-inicial
+php artisan progresion:configurar-inicial --reset
+php artisan progresion:configurar-inicial --tests
+php artisan progresion:configurar-inicial --insignias
 ```
 
 ## 🧪 Pruebas

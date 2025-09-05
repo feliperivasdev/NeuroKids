@@ -56,4 +56,21 @@ class Insignia extends Model
     {
         return 'id';
     }
+
+    /**
+     * Relación con las condiciones de la insignia
+     */
+    public function condiciones()
+    {
+        return $this->hasMany(CondicionesInsignia::class, 'insignia_id');
+    }
+
+    /**
+     * Relación con usuarios que tienen esta insignia
+     */
+    public function usuarios()
+    {
+        return $this->belongsToMany(Usuario::class, 'usuarios_insignias', 'insignia_id', 'usuario_id')
+                    ->withPivot('fecha_otorgada');
+    }
 }

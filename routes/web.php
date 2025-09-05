@@ -220,3 +220,46 @@ $router->group(['prefix' => 'api/roles', 'middleware' => ['auth:api', 'admin']],
     $router->put('/{id}', 'RolesController@update');
     $router->delete('/{id}', 'RolesController@destroy');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Progresión Automática Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para el sistema de progresión automática estilo Duolingo
+|
+*/
+
+$router->group(['prefix' => 'api/progresion', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->post('/completar-test', 'ProgresionController@completarTest');
+    $router->get('/tests-disponibles', 'ProgresionController@testsDisponibles');
+    $router->get('/progreso-general', 'ProgresionController@progresoGeneral');
+    $router->get('/juegos-disponibles', 'ProgresionController@juegosDisponibles');
+    $router->get('/lecturas-disponibles', 'ProgresionController@lecturasDisponibles');
+    $router->post('/auto-asignar-juego', 'ProgresionController@autoAsignarJuego');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Condiciones Insignia Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de condiciones automáticas de insignias
+|
+*/
+
+$router->group(['prefix' => 'api/condiciones-insignia', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'CondicionesInsigniaController@index');
+    $router->get('/insignia/{insignia_id}', 'CondicionesInsigniaController@getByInsignia');
+    $router->get('/tipos-condiciones', 'CondicionesInsigniaController@tiposCondiciones');
+
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'CondicionesInsigniaController@store');
+        $router->put('/{id}', 'CondicionesInsigniaController@update');
+        $router->delete('/{id}', 'CondicionesInsigniaController@destroy');
+        $router->post('/predeterminadas', 'CondicionesInsigniaController@crearCondicionesPredeterminadas');
+    });
+});

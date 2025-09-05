@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\CreateInstituciones::class,
         \App\Console\Commands\GenerateAppKey::class,
         \App\Console\Commands\GenerarCodigosEstudiantes::class,
+        \App\Console\Commands\ConfigurarProgresionInicial::class,
     ];
 
     /**

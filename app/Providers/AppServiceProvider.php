@@ -13,6 +13,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // Registrar el servicio de progresión automática
+        $this->app->singleton(\App\Services\ProgresionAutomaticaService::class, function ($app) {
+            return new \App\Services\ProgresionAutomaticaService();
+        });
     }
 }
