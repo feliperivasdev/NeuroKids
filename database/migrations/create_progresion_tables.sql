@@ -183,3 +183,5 @@ COMMENT ON COLUMN resultados_test.porcentaje IS 'Porcentaje de aciertos en el te
 COMMENT ON COLUMN resultados_test.intentos IS 'Número de veces que el usuario ha intentado este test';
 COMMENT ON COLUMN condiciones_insignia.tipo_condicion IS 'Tipo de condición: tests_completados, puntuacion_minima, etc.';
 COMMENT ON COLUMN condiciones_insignia.valor_requerido IS 'Valor numérico requerido para cumplir la condición';
+
+

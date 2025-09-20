@@ -254,3 +254,5 @@ class ProgresionController extends Controller
     }
 }
 
+
+

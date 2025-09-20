@@ -70,3 +70,4 @@ class CondicionesInsignia extends Model
     }
 }
 
+
