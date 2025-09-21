@@ -117,7 +117,7 @@ php artisan progresion:configurar-inicial
 ## 🚀 Iniciar el servidor
 
 ```bash
-php -S localhost:8000 -t public
+composer run dev
 ```
 
 ## 📚 Documentación de la API

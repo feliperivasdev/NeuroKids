@@ -5,3 +5,15 @@ Homestead.yaml
 .env
 .phpunit.result.cache
 app/Console/Commands/CreateAdminUser.php
+
+# Docker files (local only) - estos NO se suben
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+docker-compose.dev.yml
+.dockerignore
+.env.docker
+.env.container
+apache-config.conf
+
+# El script dev-server.sh SÍ se sube al repo para que todos lo usen

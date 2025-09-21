@@ -14,7 +14,13 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return [
+        'app' => 'NeuroKids API - Docker Dev Mode',
+        'version' => $router->app->version(),
+        'message' => '🎉 ¡Sincronización automática funcionando!',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'environment' => 'development'
+    ];
 });
 
 /*
