@@ -174,9 +174,10 @@ $router->group(['prefix' => 'api/usuarios-insignias', 'middleware' => 'auth:api'
 $router->group(['prefix' => 'api/pruebas-lectura', 'middleware' => 'auth:api'], function () use ($router) {
     // Rutas para todos los usuarios autenticados
     $router->get('/', 'PruebasLecturaController@index');
-    $router->get('/{id}', 'PruebasLecturaController@show');
-    $router->get('/nivel/{nivel}', 'PruebasLecturaController@getByNivel');
+    // Definir rutas estáticas antes de rutas variables para evitar conflictos con FastRoute
     $router->get('/diagnosticas', 'PruebasLecturaController@getDiagnosticas');
+    $router->get('/nivel/{nivel}', 'PruebasLecturaController@getByNivel');
+    $router->get('/{id}', 'PruebasLecturaController@show');
 
     // Rutas solo para administradores
     $router->group(['middleware' => 'admin'], function () use ($router) {
