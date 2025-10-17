@@ -1,3 +1,4 @@
+<!-- //ok -->
 <?php
 
 namespace App\Http\Controllers;
