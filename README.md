@@ -128,9 +128,41 @@ composer run dev
 http://localhost:8000/api
 ```
 
+### Endpoints Principales
+
+#### 📚 Gestión de Lecturas
+
+-   `GET /api/lecturas` - Listar todas las lecturas
+-   `GET /api/lecturas/{id}` - Ver lectura específica
+-   `GET /api/lecturas/nivel/{nivel}` - Obtener lecturas por nivel
+-   `POST /api/lecturas` - Crear nueva lectura (admin)
+-   `PUT /api/lecturas/{id}` - Actualizar lectura (admin)
+-   `DELETE /api/lecturas/{id}` - Eliminar lectura (admin)
+
+#### 📝 Usuarios y Lecturas
+
+-   `GET /usuarios-lecturas` - Listar todas las asignaciones
+-   `GET /usuarios-lecturas/usuario/{usuario_id}` - Ver lecturas de un usuario
+-   `POST /usuarios-lecturas/progreso/{id}` - Actualizar progreso de lectura
+-   `GET /usuarios-lecturas/{id}` - Ver detalle de asignación
+
+#### 🎮 Usuarios y Juegos
+
+-   `GET /usuarios-juegos` - Listar todas las asignaciones
+-   `GET /usuarios-juegos/usuario/{usuario_id}` - Ver juegos de un usuario
+-   `POST /usuarios-juegos/progreso/{id}` - Actualizar progreso de juego
+-   `GET /usuarios-juegos/{id}` - Ver detalle de asignación
+
+#### 📊 Evaluaciones
+
+-   `GET /evaluaciones` - Listar evaluaciones
+-   `GET /evaluaciones/{id}` - Ver evaluación específica
+-   `POST /evaluaciones` - Crear evaluación (admin)
+-   `GET /evaluaciones-usuario/usuario/{usuario_id}` - Ver evaluaciones de usuario
+
 ### Sistema de Autenticación Separada
 
-El sistema ahora está dividido en **dos paneles independientes**:
+El sistema está dividido en **dos paneles independientes**:
 
 #### 🔐 Panel Administrativo (`/api/admin/`)
 
@@ -138,44 +170,46 @@ El sistema ahora está dividido en **dos paneles independientes**:
 
 ##### 🔓 Rutas Públicas
 
--   `POST /admin/login` - Login de admin/institución
+-   `POST /api/admin/login` - Iniciar sesión de admin/institución
 
 ##### 🛡️ Rutas Protegidas (requieren token)
 
--   `GET /admin/me` - Información del usuario autenticado
--   `POST /admin/logout` - Cerrar sesión
--   `POST /admin/refresh` - Refrescar token
--   `POST /admin/change-password` - Cambiar contraseña
+-   `GET /api/admin/me` - Información del usuario autenticado
+-   `POST /api/admin/logout` - Cerrar sesión
+-   `POST /api/admin/refresh` - Refrescar token
+-   `POST /api/admin/change-password` - Cambiar contraseña
 
-##### 👑 Rutas de Administrador
+##### �️ Rutas de Administrador
 
--   `POST /admin/create-user` - Crear usuario
--   `POST /admin/generate-token` - Generar token para usuario
--   `GET /admin/users` - Listar usuarios
+-   `POST /api/admin/create-user` - Crear nuevo usuario
+-   `GET /api/admin/users` - Listar todos los usuarios
+-   `GET /api/admin/users/{id}` - Ver usuario específico
+-   `PUT /api/admin/users/{id}` - Actualizar usuario
+-   `DELETE /api/admin/users/{id}` - Desactivar usuario
 
-#### 👨‍🎓 Panel de Estudiantes (`/api/students/`)
+#### 👨‍🎓 Panel de Estudiantes (`/api/estudiantes/`)
 
-**Para estudiantes (nombre + apellido + institución)**
+**Para estudiantes (nombre + institución)**
 
 ##### 🔓 Rutas Públicas
 
--   `POST /students/login` - Login de estudiante (sin contraseña)
--   `POST /students/register` - Registro de estudiante
--   `GET /students/search` - Buscar estudiantes (para sugerencias)
--   `GET /students/instituciones` - Obtener instituciones disponibles
+-   `POST /api/estudiantes/iniciar-sesion` - Iniciar sesión de estudiante (sin contraseña)
+-   `POST /api/estudiantes/registro` - Registro de estudiante
+-   `GET /api/estudiantes/buscar` - Buscar estudiantes (para sugerencias)
+-   `GET /api/estudiantes/instituciones` - Obtener instituciones disponibles
 
 ##### 🛡️ Rutas Protegidas (requieren token de estudiante)
 
--   `GET /students/me` - Información del estudiante autenticado
--   `POST /students/logout` - Cerrar sesión
+-   `GET /api/estudiantes/perfil` - Información del estudiante autenticado
+-   `POST /api/estudiantes/logout` - Cerrar sesión del estudiante
 
 #### 👥 Gestión de Usuarios (Panel Admin)
 
--   `GET /usuarios` - Listar usuarios
--   `GET /usuarios/{id}` - Ver usuario específico
--   `PUT /usuarios/{id}` - Actualizar usuario
--   `POST /usuarios` - Crear usuario (solo admin)
--   `DELETE /usuarios/{id}` - Desactivar usuario (solo admin)
+-   `GET /api/admin/users` - Listar usuarios
+-   `GET /api/admin/users/{id}` - Ver usuario específico
+-   `PUT /api/admin/users/{id}` - Actualizar usuario
+-   `POST /api/admin/create-user` - Crear usuario (solo admin)
+-   `DELETE /api/admin/users/{id}` - Desactivar usuario (solo admin)
 
 #### 🎯 Gestión de Juegos
 
@@ -231,14 +265,14 @@ El sistema ahora está dividido en **dos paneles independientes**:
 
 #### 🔐 Panel Administrativo
 
-##### Login de Administrador/Institución
+##### Iniciar Sesión de Administrador/Institución
 
 ```bash
 curl -X POST http://localhost:8000/api/admin/login \
   -H "Content-Type: application/json" \
   -d '{
-    "correo": "admin@lectorix.com",
-    "contrasena": "admin123"
+    "email": "admin@lectorix.com",
+    "password": "admin123"
   }'
 ```
 
@@ -253,33 +287,32 @@ curl -X GET http://localhost:8000/api/admin/me \
 
 ##### Registro de Estudiante (SIN contraseña)
 
-```bash
-curl -X POST http://localhost:8000/api/students/register \
+````bash
+curl -X POST http://localhost:8000/api/estudiantes/registro \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Juan",
-    "apellido": "Pérez",
-    "edad": 20,
-    "institucion_id": 1
+    "institucion_id": 1,
+    "grado": "4to",
+    "edad": 10
   }'
-```
 
-##### Login de Estudiante (nombre + apellido + institución)
+##### Iniciar Sesión de Estudiante (nombre + institución)
 
 ```bash
-curl -X POST http://localhost:8000/api/students/login \
+curl -X POST http://localhost:8000/api/estudiantes/iniciar-sesion \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Juan",
-    "apellido": "Pérez",
     "institucion_id": 1
   }'
-```
+````
 
 ##### Buscar estudiantes (para sugerencias en el frontend)
 
 ```bash
-curl -X GET "http://localhost:8000/api/students/search?nombre=Juan&institucion_id=1"
+curl -X GET "http://localhost:8000/api/estudiantes/buscar?institucion_id=1&nombre=Juan" \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
 ```
 
 ##### Obtener instituciones disponibles
@@ -389,24 +422,22 @@ curl -X GET http://localhost:8000/api/asignaciones-juegos/estadisticas/1 \
 
 #### Completar un test (desbloquea automáticamente nuevos tests y otorga insignias)
 
-```bash
+````bash
 curl -X POST http://localhost:8000/api/progresion/completar-test \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TU_TOKEN_JWT" \
   -d '{
     "test_id": 1,
-    "puntuacion": 85,
-    "puntuacion_maxima": 100,
+    "respuestas": [{"pregunta_id": 1, "respuesta_id": 2}],
     "tiempo_segundos": 300
   }'
-```
 
 #### Ver tests disponibles para el usuario
 
 ```bash
 curl -X GET http://localhost:8000/api/progresion/tests-disponibles \
   -H "Authorization: Bearer TU_TOKEN_JWT"
-```
+````
 
 #### Ver progreso general del usuario
 
@@ -475,10 +506,10 @@ curl -X POST http://localhost:8000/api/condiciones-insignia/predeterminadas \
   }'
 ```
 
-## 🏗️ Estructura del Proyecto
+### Estructura del Proyecto
 
 ```
-Lectorix_API/
+NeuroKids/
 ├── app/
 │   ├── Console/
 │   │   └── Commands/
@@ -488,13 +519,21 @@ Lectorix_API/
 │   │       └── GenerarCodigosEstudiantes.php # Generar códigos únicos
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── AuthController.php           # Autenticación admin/instituciones
-│   │   │   └── StudentAuthController.php    # Autenticación de estudiantes
+│   │   │   ├── AdminAuthController.php      # Autenticación admin/instituciones
+│   │   │   ├── EstudianteAuthController.php # Autenticación de estudiantes
+│   │   │   ├── EvaluacionController.php     # Control de evaluaciones
+│   │   │   ├── LecturaController.php        # Control de lecturas
+│   │   │   ├── UsuariosJuegoController.php  # Control de juegos por usuario
+│   │   │   └── UsuariosLecturaController.php # Control de lecturas por usuario
 │   │   └── Middleware/
 │   │       └── AdminMiddleware.php          # Middleware de admin
 │   └── Models/
+│       ├── Evaluacione.php                  # Modelo de evaluaciones
+│       ├── Juego.php                        # Modelo de juegos
+│       ├── Lectura.php                      # Modelo de lecturas
 │       ├── Usuario.php                      # Modelo con códigos únicos y JWT
-│       └── Institucion.php                  # Modelo de institución
+│       ├── UsuariosJuego.php               # Modelo de progreso en juegos
+│       └── UsuariosLectura.php             # Modelo de progreso en lecturas
 ├── bootstrap/
 │   └── app.php                              # Configuración de Lumen
 ├── config/
