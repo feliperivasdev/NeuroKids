@@ -55,24 +55,24 @@ $router->group(['prefix' => 'api/admin'], function () use ($router) {
 
 /*
 |--------------------------------------------------------------------------
-| Student Auth Routes - API Panel de Estudiantes
+| Estudiantes Auth Routes - API Panel de Estudiantes
 |--------------------------------------------------------------------------
 |
 | Rutas para autenticación de estudiantes (nombre + apellido)
 |
 */
 
-$router->group(['prefix' => 'api/students'], function () use ($router) {
+$router->group(['prefix' => 'api/estudiantes'], function () use ($router) {
     // Rutas públicas (sin autenticación)
-    $router->post('login', 'StudentAuthController@loginStudent');
-    $router->post('register', 'StudentAuthController@registerStudent');
-    $router->get('search', 'StudentAuthController@searchStudents');
-    $router->get('instituciones', 'StudentAuthController@getInstituciones');
+    $router->post('iniciar-sesion', 'EstudianteAuthController@loginStudent');
+    $router->post('registro', 'EstudianteAuthController@registerStudent');
+    $router->get('buscar', 'EstudianteAuthController@searchStudents');
+    $router->get('instituciones', 'EstudianteAuthController@getInstituciones');
     
     // Rutas protegidas (requieren autenticación de estudiante)
-    $router->group(['middleware' => 'auth:api'], function () use ($router) {
-        $router->get('me', 'StudentAuthController@me');
-        $router->post('logout', 'StudentAuthController@logout');
+    $router->group(['middleware' => 'jwt.auth'], function () use ($router) {
+        $router->get('perfil', 'EstudianteAuthController@me');
+        $router->post('cerrar-sesion', 'EstudianteAuthController@logout');
     });
 });
 
@@ -95,6 +95,26 @@ $router->group(['prefix' => 'api/usuarios', 'middleware' => 'auth:api'], functio
     $router->group(['middleware' => 'admin'], function () use ($router) {
         $router->post('/', 'UsuarioController@store');
         $router->delete('/{id}', 'UsuarioController@disabled');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Instituciones Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de instituciones - Requieren autenticación
+|
+*/
+
+$router->group(['prefix' => 'api/instituciones', 'middleware' => 'auth:api'], function () use ($router) {
+    // Rutas para todos los usuarios autenticados
+    $router->get('/', 'InstitucionController@index');
+    $router->get('/{id}', 'InstitucionController@show');
+    
+    // Rutas solo para administradores
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'InstitucionController@store');
     });
 });
 
@@ -164,26 +184,45 @@ $router->group(['prefix' => 'api/usuarios-insignias', 'middleware' => 'auth:api'
 
 /*
 |--------------------------------------------------------------------------
-| Pruebas Lectura Routes - API Protegida
+| Usuarios Juegos Routes - API Protegida
 |--------------------------------------------------------------------------
 |
-| Rutas para gestión de pruebas de lectura - Requieren autenticación
+| Rutas para gestión de asignaciones y progreso de juegos por usuario
 |
 */
 
-$router->group(['prefix' => 'api/pruebas-lectura', 'middleware' => 'auth:api'], function () use ($router) {
-    // Rutas para todos los usuarios autenticados
-    $router->get('/', 'PruebasLecturaController@index');
-    // Definir rutas estáticas antes de rutas variables para evitar conflictos con FastRoute
-    $router->get('/diagnosticas', 'PruebasLecturaController@getDiagnosticas');
-    $router->get('/nivel/{nivel}', 'PruebasLecturaController@getByNivel');
-    $router->get('/{id}', 'PruebasLecturaController@show');
+$router->group(['prefix' => 'api/usuarios-juegos', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'UsuariosJuegoController@index');
+    $router->get('/usuario/{usuario_id}', 'UsuariosJuegoController@getByUser');
+    $router->get('/{id}', 'UsuariosJuegoController@show');
+    $router->post('/progreso/{id}', 'UsuariosJuegoController@updateProgress');
 
-    // Rutas solo para administradores
     $router->group(['middleware' => 'admin'], function () use ($router) {
-        $router->post('/', 'PruebasLecturaController@store');
-        $router->put('/{id}', 'PruebasLecturaController@update');
-        $router->delete('/{id}', 'PruebasLecturaController@destroy');
+        $router->post('/', 'UsuariosJuegoController@store');
+        $router->put('/{id}', 'UsuariosJuegoController@update');
+        $router->delete('/{id}', 'UsuariosJuegoController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Usuarios Lecturas Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de asignaciones y progreso de lecturas por usuario
+|
+*/
+
+$router->group(['prefix' => 'api/usuarios-lecturas', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'UsuariosLecturaController@index');
+    $router->get('/usuario/{usuario_id}', 'UsuariosLecturaController@getByUser');
+    $router->get('/{id}', 'UsuariosLecturaController@show');
+    $router->post('/progreso/{id}', 'UsuariosLecturaController@updateProgress');
+
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'UsuariosLecturaController@store');
+        $router->put('/{id}', 'UsuariosLecturaController@update');
+        $router->delete('/{id}', 'UsuariosLecturaController@destroy');
     });
 });
 
@@ -245,6 +284,179 @@ $router->group(['prefix' => 'api/progresion', 'middleware' => 'auth:api'], funct
     $router->get('/juegos-disponibles', 'ProgresionController@juegosDisponibles');
     $router->get('/lecturas-disponibles', 'ProgresionController@lecturasDisponibles');
     $router->post('/auto-asignar-juego', 'ProgresionController@autoAsignarJuego');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Evaluaciones Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de evaluaciones
+|
+*/
+
+$router->group(['prefix' => 'api/evaluaciones', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'EvaluacionController@index');
+    $router->get('/{id}', 'EvaluacionController@show');
+    
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'EvaluacionController@store');
+        $router->put('/{id}', 'EvaluacionController@update');
+        $router->delete('/{id}', 'EvaluacionController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Evaluaciones Usuario Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de evaluaciones de usuarios
+|
+*/
+
+$router->group(['prefix' => 'api/evaluaciones-usuario', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'EvaluacionesUsuarioController@index');
+    $router->get('/usuario/{usuario_id}', 'EvaluacionesUsuarioController@getByUser');
+    
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'EvaluacionesUsuarioController@store');
+        $router->put('/{id}', 'EvaluacionesUsuarioController@update');
+        $router->delete('/{id}', 'EvaluacionesUsuarioController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Lecturas Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de lecturas
+|
+*/
+
+$router->group(['prefix' => 'api/lecturas', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'LecturaController@index');
+    $router->get('/nivel/{nivel}', 'LecturaController@getByNivel');
+    $router->get('/{id}', 'LecturaController@show');
+    
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'LecturaController@store');
+        $router->put('/{id}', 'LecturaController@update');
+        $router->delete('/{id}', 'LecturaController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Niveles de Dificultad Routes - API Protegida
+|--------------------------------------------------------------------------
+|
+| Rutas para gestión de niveles de dificultad
+|
+*/
+
+$router->group(['prefix' => 'api/niveles-dificultad', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'NivelesDificultadController@index');
+    $router->get('/{id}', 'NivelesDificultadController@show');
+    
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'NivelesDificultadController@store');
+        $router->put('/{id}', 'NivelesDificultadController@update');
+        $router->delete('/{id}', 'NivelesDificultadController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Preguntas Evaluacion Routes - API Protegida
+|--------------------------------------------------------------------------
+*/
+
+$router->group(['prefix' => 'api/preguntas-evaluacion', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'PreguntasEvaluacionController@index');
+    $router->get('/{id}', 'PreguntasEvaluacionController@show');
+    $router->get('/evaluacion/{evaluacion_id}', 'PreguntasEvaluacionController@getByEvaluacion');
+
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'PreguntasEvaluacionController@store');
+        $router->put('/{id}', 'PreguntasEvaluacionController@update');
+        $router->delete('/{id}', 'PreguntasEvaluacionController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rangos Edad Routes - API Protegida
+|--------------------------------------------------------------------------
+*/
+
+$router->group(['prefix' => 'api/rangos-edad', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'RangosEdadController@index');
+    $router->get('/{id}', 'RangosEdadController@show');
+
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'RangosEdadController@store');
+        $router->put('/{id}', 'RangosEdadController@update');
+        $router->delete('/{id}', 'RangosEdadController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Respuestas Evaluacion Routes - API Protegida
+|--------------------------------------------------------------------------
+*/
+
+$router->group(['prefix' => 'api/respuestas-evaluacion', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'RespuestasEvaluacionController@index');
+    $router->get('/{id}', 'RespuestasEvaluacionController@show');
+    $router->get('/pregunta/{pregunta_id}', 'RespuestasEvaluacionController@getByPregunta');
+    $router->post('/verificar/{id}', 'RespuestasEvaluacionController@verificarRespuesta');
+
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'RespuestasEvaluacionController@store');
+        $router->put('/{id}', 'RespuestasEvaluacionController@update');
+        $router->delete('/{id}', 'RespuestasEvaluacionController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Respuestas Lectura Routes - API Protegida
+|--------------------------------------------------------------------------
+*/
+
+$router->group(['prefix' => 'api/respuestas-lectura', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'RespuestasLecturaController@index');
+    $router->get('/{id}', 'RespuestasLecturaController@show');
+    $router->get('/pregunta/{pregunta_id}', 'RespuestasLecturaController@getByPregunta');
+    $router->post('/verificar/{id}', 'RespuestasLecturaController@verificarRespuesta');
+
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'RespuestasLecturaController@store');
+        $router->put('/{id}', 'RespuestasLecturaController@update');
+        $router->delete('/{id}', 'RespuestasLecturaController@destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Resultados Pregunta Routes - API Protegida
+|--------------------------------------------------------------------------
+*/
+
+$router->group(['prefix' => 'api/resultados-pregunta', 'middleware' => 'auth:api'], function () use ($router) {
+    $router->get('/', 'ResultadosPreguntaController@index');
+    $router->get('/{id}', 'ResultadosPreguntaController@show');
+    $router->get('/usuario/{usuario_id}', 'ResultadosPreguntaController@getByUsuario');
+    $router->get('/estadisticas/{usuario_id}', 'ResultadosPreguntaController@getEstadisticasUsuario');
+
+    $router->group(['middleware' => 'admin'], function () use ($router) {
+        $router->post('/', 'ResultadosPreguntaController@store');
+        $router->put('/{id}', 'ResultadosPreguntaController@update');
+        $router->delete('/{id}', 'ResultadosPreguntaController@destroy');
+    });
 });
 
 /*

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ResultadosLectura extends Model
+class RangosEdad extends Model
 {
     use HasFactory;
 
@@ -14,14 +14,14 @@ class ResultadosLectura extends Model
      *
      * @var string
      */
-    protected $table = 'resultados_lectura';
+    protected $table = 'rangos_edad';
 
     /**
      * Los atributos que son asignables masivamente.
      *
      * @var array
      */
-    protected $fillable = ['usuario_id', 'prueba_id', 'puntaje', 'nivel_al_realizar', 'intento', 'fecha'];
+    protected $fillable = ['edad_min', 'edad_max', 'descripcion'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
@@ -37,12 +37,8 @@ class ResultadosLectura extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'usuario_id' => 'integer',
-        'prueba_id' => 'integer',
-        'puntaje' => 'integer',
-        'nivel_al_realizar' => 'integer',
-        'intento' => 'integer',
-        'fecha' => 'datetime',
+        'edad_min' => 'integer',
+        'edad_max' => 'integer',
     ];
 
     /**

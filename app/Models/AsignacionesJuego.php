@@ -3,62 +3,46 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @OA\Schema(
+ *     schema="AsignacionesJuego",
+ *     description="Modelo de asignación de juegos",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="usuario_id", type="integer"),
+ *     @OA\Property(property="juego_id", type="integer"),
+ *     @OA\Property(property="nivel_asignado", type="integer"),
+ *     @OA\Property(property="completado", type="boolean"),
+ *     @OA\Property(property="fecha_asignacion", type="string", format="date-time"),
+ *     @OA\Property(property="fecha_completado", type="string", format="date-time", nullable=true)
+ * )
+ */
 class AsignacionesJuego extends Model
 {
-    use HasFactory;
-
-    /**
-     * La tabla asociada al modelo.
-     *
-     * @var string
-     */
     protected $table = 'asignaciones_juegos';
-
-    /**
-     * Los atributos que son asignables masivamente.
-     *
-     * @var array
-     */
-    protected $fillable = ['usuario_id', 'juego_id', 'nivel_asignado', 'completado', 'fecha_asignacion', 'fecha_completado'];
-
-    /**
-     * Los atributos que deben ocultarse para arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [''];
-
-    /**
-     * Los atributos que deben ser convertidos a tipos nativos.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'id' => 'integer',
-        'usuario_id' => 'integer',
-        'juego_id' => 'integer',
-        'nivel_asignado' => 'integer',
-        'completado' => 'boolean',
-        'fecha_asignacion' => 'datetime',
-        'fecha_completado' => 'datetime',
+    
+    protected $fillable = [
+        'usuario_id',
+        'juego_id',
+        'nivel_asignado',
+        'completado',
+        'fecha_asignacion',
+        'fecha_completado'
     ];
 
-    /**
-     * Indica si el modelo debe ser timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
+    protected $casts = [
+        'completado' => 'boolean',
+        'fecha_asignacion' => 'datetime',
+        'fecha_completado' => 'datetime'
+    ];
 
-    /**
-     * Obtiene el nombre de la clave primaria.
-     *
-     * @return string
-     */
-    public function getKeyName()
+    public function usuario()
     {
-        return 'id';
+        return $this->belongsTo(Usuario::class);
+    }
+
+    public function juego()
+    {
+        return $this->belongsTo(Juego::class);
     }
 }

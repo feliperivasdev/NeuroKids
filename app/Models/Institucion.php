@@ -21,8 +21,11 @@ class Institucion extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'nombre', 'direccion', 'telefono', 'email'
+        protected $fillable = [
+        'nombre',
+        'direccion',
+        'correo_contacto',
+        'telefono_contacto'
     ];
 
     /**
@@ -30,9 +33,7 @@ class Institucion extends Model
      *
      * @var array
      */
-    protected $casts = [
-        //
-    ];
+    protected $casts = [];
 
     /**
      * Indica si el modelo debe ser timestamped.

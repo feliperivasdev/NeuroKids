@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Juego extends Model
+class UsuariosJuego extends Model
 {
     use HasFactory;
 
@@ -14,14 +14,14 @@ class Juego extends Model
      *
      * @var string
      */
-    protected $table = 'juegos';
+    protected $table = 'usuarios_juegos';
 
     /**
      * Los atributos que son asignables masivamente.
      *
      * @var array
      */
-    protected $fillable = ['nombre', 'descripcion', 'nivel_dificultad_id', 'rango_edad_id', 'activo'];
+    protected $fillable = ['usuario_id', 'juego_id', 'completado', 'puntaje', 'intentos', 'tiempo_total_segundos', 'fecha_asignacion', 'fecha_ultimo_intento'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
@@ -37,11 +37,14 @@ class Juego extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'nivel_dificultad_id' => 'integer',
-        'rango_edad_id' => 'integer',
-        'activo' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'usuario_id' => 'integer',
+        'juego_id' => 'integer',
+        'completado' => 'boolean',
+        'puntaje' => 'float',
+        'intentos' => 'integer',
+        'tiempo_total_segundos' => 'integer',
+        'fecha_asignacion' => 'datetime',
+        'fecha_ultimo_intento' => 'datetime',
     ];
 
     /**
@@ -49,7 +52,7 @@ class Juego extends Model
      *
      * @var bool
      */
-    public $timestamps = true;
+    public $timestamps = false;
 
     /**
      * Obtiene el nombre de la clave primaria.

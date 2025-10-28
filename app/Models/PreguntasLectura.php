@@ -21,7 +21,7 @@ class PreguntasLectura extends Model
      *
      * @var array
      */
-    protected $fillable = ['prueba_id', 'texto_pregunta', 'respuesta_correcta', 'orden'];
+    protected $fillable = ['lectura_id', 'texto', 'tipo', 'orden', 'nivel_dificultad_id'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
@@ -37,8 +37,9 @@ class PreguntasLectura extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'prueba_id' => 'integer',
+        'lectura_id' => 'integer',
         'orden' => 'integer',
+        'nivel_dificultad_id' => 'integer',
     ];
 
     /**

@@ -1,11 +1,17 @@
 {
     "name": "laravel/lumen",
     "description": "The Laravel Lumen Framework.",
-    "keywords": ["framework", "laravel", "lumen"],
+    "keywords": [
+        "framework",
+        "laravel",
+        "lumen"
+    ],
     "license": "MIT",
     "type": "project",
     "require": {
         "php": "^8.1",
+        "darkaonline/l5-swagger": "^8.6",
+        "darkaonline/swagger-lume": "^11.0",
         "doctrine/dbal": "^3.9",
         "illuminate/database": "^10.48",
         "laravel/lumen-framework": "^10.0",
@@ -33,10 +39,39 @@
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
-        "dev": "@php -S localhost:8000 -t public/",
-        "serve": "@php -S localhost:8000 -t public/",
-        "start": "@php -S localhost:8000 -t public/",
-        "api": "@php -S localhost:8000 -t public/"
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -d max_execution_time=0 -S localhost:8000 -t public/"
+        ],
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -d max_execution_time=0 -S localhost:8000 -t public/"
+        ],
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -d max_execution_time=0 -S localhost:8000 -t public/"
+        ],
+        "check-port": [
+            "@php -r \"echo (function_exists('exec') && !in_array(@exec('lsof -t -i:8000'), [null, ''], true)) ? 'Puerto 8000 en uso\\n' : '';\"",
+            "@php -r \"echo (function_exists('exec') && !in_array(@exec('netstat -ano | findstr :8000'), [null, ''], true)) ? 'Puerto 8000 en uso\\n' : '';\""
+        ],
+        "clear-port": [
+            "@php -r \"if(PHP_OS_FAMILY === 'Linux') shell_exec('lsof -t -i:8000 | xargs kill -9 2>/dev/null');\"",
+            "@php -r \"if(PHP_OS_FAMILY === 'Windows') shell_exec('for /f %P in (\\'netstat -ano | findstr :8000\\') do TaskKill /PID %P /F >nul 2>&1');\""
+        ],
+        "setup": [
+            "@composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php artisan jwt:secret"
+        ],
+        "fresh": [
+            "@php artisan cache:clear",
+            "@php artisan config:clear",
+            "@php artisan route:clear",
+            "@composer dump-autoload",
+            "@php artisan optimize"
+        ]
     },
     "config": {
         "optimize-autoloader": true,

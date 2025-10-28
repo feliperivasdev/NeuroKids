@@ -24,8 +24,15 @@ $app = new Laravel\Lumen\Application(
 );
 
 $app->withFacades();
+$app->withEloquent();
 
- $app->withEloquent();
+// Bind ResponseFactory for response() helper
+$app->singleton(
+    Illuminate\Contracts\Routing\ResponseFactory::class,
+    function ($app) {
+        return new Laravel\Lumen\Http\ResponseFactory();
+    }
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -80,7 +87,7 @@ $app->middleware([
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
-    'jwt.auth' => Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+    'jwt.auth' => App\Http\Middleware\JwtMiddleware::class,
     'jwt.refresh' => Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
     'admin' => App\Http\Middleware\AdminMiddleware::class,
 ]);

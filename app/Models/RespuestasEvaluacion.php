@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class PruebasLectura extends Model
+class RespuestasEvaluacion extends Model
 {
     use HasFactory;
 
@@ -14,14 +14,14 @@ class PruebasLectura extends Model
      *
      * @var string
      */
-    protected $table = 'pruebas_lectura';
+    protected $table = 'respuestas_evaluacion';
 
     /**
      * Los atributos que son asignables masivamente.
      *
      * @var array
      */
-    protected $fillable = ['titulo', 'descripcion', 'nivel', 'es_diagnostica', 'fecha_creacion'];
+    protected $fillable = ['pregunta_id', 'texto', 'es_correcta', 'orden'];
 
     /**
      * Los atributos que deben ocultarse para arrays.
@@ -37,9 +37,9 @@ class PruebasLectura extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'nivel' => 'integer',
-        'es_diagnostica' => 'boolean',
-        'fecha_creacion' => 'datetime',
+        'pregunta_id' => 'integer',
+        'es_correcta' => 'boolean',
+        'orden' => 'integer',
     ];
 
     /**
