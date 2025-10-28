@@ -40,6 +40,7 @@ class UsuarioController extends Controller
     {
         $this->validate($request,[
             'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
             'correo' => 'required|email|unique:usuarios,correo',
             'contrasena' => 'required|string|min:6',
             'rol_id' => 'required|exists:roles,id',
@@ -47,9 +48,10 @@ class UsuarioController extends Controller
         ]);
 
         $usuario = new Usuario();
-        $usuario->nombre = $request->nombre;
+        $usuario->nombre = trim($request->nombre);
+        $usuario->apellido = trim($request->apellido);
         $usuario->correo = $request->correo;
-        $usuario->contrasena = Hash::make($request->contrasena);
+        $usuario->contrasena_hash = Hash::make($request->contrasena);
         $usuario->rol_id = $request->rol_id;
         $usuario->institucion_id = $request->institucion_id;
         $usuario->estado = true;
@@ -75,9 +77,9 @@ class UsuarioController extends Controller
                 'message' => 'Usuario no encontrado'], 404);
         }
 
-        $usuario->fill($request->only(['nombre', 'correo', 'rol_id', 'institucion_id']));
+        $usuario->fill($request->only(['nombre', 'apellido', 'correo', 'rol_id', 'institucion_id']));
         if($request->has('contrasena')){
-            $usuario->contrasena = Hash::make($request->contrasena);
+            $usuario->contrasena_hash = Hash::make($request->contrasena);
         }
         $usuario->save();
 
