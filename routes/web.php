@@ -49,6 +49,7 @@ $router->group(['prefix' => 'api/admin'], function () use ($router) {
             $router->post('create-user', 'AuthController@createUser');
             $router->post('generate-token', 'AuthController@generateToken');
             $router->get('users', 'AuthController@listUsers');
+            $router->get('users/{id}', 'AuthController@showUser');
         });
     });
 });

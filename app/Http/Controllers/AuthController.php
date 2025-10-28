@@ -139,12 +139,14 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
             'correo' => 'required|string|email|max:255|unique:usuarios',
             'contrasena' => 'required|string|min:6',
             'rol_id' => 'required|integer|exists:roles,id',
             'institucion_id' => 'required|integer|exists:instituciones,id',
         ], [
             'nombre.required' => 'El nombre es obligatorio',
+            'apellido.required' => 'El apellido es obligatorio',
             'correo.required' => 'El correo es obligatorio',
             'correo.email' => 'El correo debe tener un formato válido',
             'correo.unique' => 'El correo ya está registrado',
@@ -165,8 +167,13 @@ class AuthController extends Controller
         }
 
         try {
+            // Sanitizar entradas básicas (evitar espacios extra)
+            $nombre = trim($request->input('nombre', ''));
+            $apellido = trim($request->input('apellido', ''));
+
             $usuario = Usuario::create([
-                'nombre' => $request->nombre,
+                'nombre' => $nombre,
+                'apellido' => $apellido,
                 'correo' => $request->correo,
                 'contrasena_hash' => Hash::make($request->contrasena),
                 'rol_id' => $request->rol_id,
@@ -450,6 +457,50 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener usuarios',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mostrar usuario por ID (solo administradores)
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function showUser(int $id): JsonResponse
+    {
+        // Verificar que el usuario autenticado sea administrador (rol_id = 1)
+        $currentUser = auth('api')->user();
+        if ($currentUser->rol_id !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para ver usuarios'
+            ], 403);
+        }
+
+        try {
+            $usuario = Usuario::select('id', 'nombre', 'apellido', 'correo', 'rol_id', 'institucion_id', 'estado', 'fecha_creacion')
+                ->find($id);
+
+            if (!$usuario) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuario no encontrado'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'usuario' => $usuario
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener usuario',
                 'error' => $e->getMessage()
             ], 500);
         }
