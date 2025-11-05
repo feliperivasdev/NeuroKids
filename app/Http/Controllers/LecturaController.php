@@ -147,7 +147,7 @@ class LecturaController extends Controller
             $this->validate($request, [
                 'tema' => 'required|string|max:255',
                 'nivel_dificultad' => 'required|integer|between:1,5',
-                'longitud' => 'required|in:corta,media,larga',
+                'longitud' => 'required|in:muy corta,corta,media,larga',
                 // Aceptamos cualquier string y luego normalizamos; evita 422 por valores como 'opcion_multiple'
                 'tipo' => 'nullable|string|max:50',
                 // Aceptamos cualquier valor y lo casteamos manualmente (para soportar multipart/form-data)
@@ -160,6 +160,7 @@ class LecturaController extends Controller
             $parametros = $request->only(['tema', 'nivel_dificultad', 'longitud', 'tipo']);
             // Normalizar tipo de lectura a valores soportados por el prompt
             $parametros['tipo'] = $this->normalizeTipoLectura($parametros['tipo'] ?? null);
+            $parametros['longitud'] = $this->normalizeLongitudLectura($parametros['longitud'] ?? null);
             $parametros['usuario_id'] = $usuario->id ?? null;
             
             // Guardar en BD si se solicita (por defecto true) - casteo robusto desde string/number/bool
@@ -309,7 +310,7 @@ class LecturaController extends Controller
         $nivel = $parametros['nivel_dificultad'] ?? 1;
         $tema = $parametros['tema'] ?? 'aventura';
         $tipo = $parametros['tipo'] ?? 'cuento';
-        $longitud = $parametros['longitud'] ?? 'media';
+        $longitud = $this->normalizeLongitudLectura($parametros['longitud'] ?? 'media');
         
         $vocabulario = [
             1 => 'muy simple, palabras básicas',
@@ -325,10 +326,10 @@ class LecturaController extends Controller
             'larga' => '400-550 palabras'
         ];
         
-        return "Crea un {$tipo} educativo para niños sobre '{$tema}' con las siguientes características:
+    return "Crea un {$tipo} educativo para niños sobre '{$tema}' con las siguientes características:
         
-- Nivel de dificultad: {$nivel}/5 (usar vocabulario {$vocabulario[$nivel]})
-- Longitud: {$longitudPalabras[$longitud]}
+- Nivel de dificultad: {$nivel}/5 (usar vocabulario " . ($vocabulario[$nivel] ?? $vocabulario[1]) . ")
+- Longitud: " . ($longitudPalabras[$longitud] ?? $longitudPalabras['media']) . "
 - Debe ser educativo y apropiado para niños
 - Incluir una moraleja o enseñanza
 - Formato: Título en la primera línea, seguido del contenido
@@ -433,6 +434,19 @@ class LecturaController extends Controller
         return $map[$t] ?? 'cuento';
     }
 
+    // Normaliza la longitud a una de: corta, media, larga
+    private function normalizeLongitudLectura($longitud): string
+    {
+        if (!$longitud) return 'media';
+        $t = strtolower(trim($longitud));
+        $map = [
+            'muy corta' => 'corta', 'corta' => 'corta', 'corto' => 'corta', 'short' => 'corta', 'pequena' => 'corta', 'pequeña' => 'corta',
+            'media' => 'media', 'mediana' => 'media', 'medio' => 'media', 'normal' => 'media',
+            'muy larga' => 'larga', 'larga' => 'larga', 'largo' => 'larga', 'long' => 'larga', 'grande' => 'larga',
+        ];
+        return $map[$t] ?? 'media';
+    }
+
     /**
      * Determina el rango_edad_id basado en la edad del usuario (si está disponible)
      * o como fallback en el nivel de dificultad y el orden de rangos existentes.
@@ -499,7 +513,7 @@ class LecturaController extends Controller
         $nivel = $parametros['nivel_dificultad'] ?? 1;
         $tema = $parametros['tema'] ?? 'aventura';
         $tipo = $parametros['tipo'] ?? 'cuento';
-        $longitud = $parametros['longitud'] ?? 'media';
+        $longitud = $this->normalizeLongitudLectura($parametros['longitud'] ?? 'media');
         $numPreguntas = max(3, min($this->calcularNumeroPreguntas($nivel), 5));
 
         $longitudPalabras = [
@@ -508,11 +522,11 @@ class LecturaController extends Controller
             'larga' => '400-550 palabras'
         ];
 
-        return "Genera en ESPAÑOL un JSON con UNA lectura {$tipo} para niños sobre '{$tema}' y {$numPreguntas} preguntas multiple_choice. RESPONDE SOLO con JSON válido, sin markdown ni comentarios.
+    return "Genera en ESPAÑOL un JSON con UNA lectura {$tipo} para niños sobre '{$tema}' y {$numPreguntas} preguntas multiple_choice. RESPONDE SOLO con JSON válido, sin markdown ni comentarios.
 
 Requisitos lectura:
 - Nivel de dificultad {$nivel}/5.
-- Longitud: {$longitudPalabras[$longitud]} (sé conciso para ahorrar tokens).
+- Longitud: " . ($longitudPalabras[$longitud] ?? $longitudPalabras['media']) . " (sé conciso para ahorrar tokens).
 - Educativa, apropiada para niños, con moraleja.
 - Campos: titulo, contenido.
 
