@@ -602,6 +602,32 @@ Configurado para PostgreSQL con soporte para NeonDB:
 -   Detección de tipos de datos
 -   Generación automática de modelos
 
+### IA (Gemini) Opcional
+
+Para habilitar la generación automática de lecturas y preguntas con IA usando Google Gemini:
+
+1. Agrega estas variables en tu `.env`:
+
+```env
+# Clave de API de Google Generative Language (Gemini)
+GEMINI_API_KEY="tu_api_key"
+
+# Modelo (por defecto: gemini-1.5-flash). Opciones comunes: gemini-1.5-flash, gemini-1.5-pro
+GEMINI_MODEL=gemini-1.5-flash
+
+# Timeout de las solicitudes (segundos)
+GEMINI_TIMEOUT=20
+```
+
+2. Endpoints relacionados:
+
+-   `POST /api/lecturas/generar-para-estudiante` (autenticado): Genera una lectura personalizada según el perfil del estudiante, la guarda, crea preguntas y la asigna al estudiante.
+-   `POST /api/lecturas/generar-personalizada` (opcionalmente autenticado): Genera una lectura a partir de parámetros (tema, nivel, longitud, tipo) y puede guardarla.
+-   `GET /api/lecturas/{lectura_id}/preguntas`: Obtiene las preguntas asociadas a una lectura.
+-   `POST /api/lecturas/{lectura_id}/evaluar`: Envía respuestas del usuario y calcula puntuación/progreso.
+
+Si no configuras GEMINI_API_KEY, el sistema usa una simulación local para permitir desarrollo sin dependencias externas.
+
 ## 🚨 Seguridad
 
 -   **Contraseñas hasheadas** con `Hash::make()`

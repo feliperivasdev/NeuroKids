@@ -13,6 +13,7 @@
         "darkaonline/l5-swagger": "^8.6",
         "darkaonline/swagger-lume": "^11.0",
         "doctrine/dbal": "^3.9",
+        "guzzlehttp/guzzle": "^7.10",
         "illuminate/database": "^10.48",
         "laravel/lumen-framework": "^10.0",
         "tymon/jwt-auth": "^2.2",

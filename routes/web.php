@@ -341,6 +341,15 @@ $router->group(['prefix' => 'api/lecturas', 'middleware' => 'auth:api'], functio
     $router->get('/nivel/{nivel}', 'LecturaController@getByNivel');
     $router->get('/{id}', 'LecturaController@show');
     
+    // Rutas para generación dinámica con IA
+    $router->post('/generar-para-estudiante', 'LecturaController@generarParaEstudiante');
+    $router->post('/generar-personalizada', 'LecturaController@generarPersonalizada');
+    $router->get('/sugerencias-estudiante/{usuario_id}', 'LecturaController@sugerenciasParaEstudiante');
+    
+    // Rutas para preguntas y evaluación
+    $router->get('/{lectura_id}/preguntas', 'LecturaController@getPreguntasLectura');
+    $router->post('/{lectura_id}/evaluar', 'LecturaController@evaluarRespuestas');
+    
     $router->group(['middleware' => 'admin'], function () use ($router) {
         $router->post('/', 'LecturaController@store');
         $router->put('/{id}', 'LecturaController@update');
