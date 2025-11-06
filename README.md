@@ -602,31 +602,333 @@ Configurado para PostgreSQL con soporte para NeonDB:
 -   Detección de tipos de datos
 -   Generación automática de modelos
 
-### IA (Gemini) Opcional
+### 🤖 IA (Gemini) - Generación Automática de Lecturas
 
-Para habilitar la generación automática de lecturas y preguntas con IA usando Google Gemini:
+El sistema puede generar lecturas y preguntas de forma automática usando Google Gemini AI.
 
-1. Agrega estas variables en tu `.env`:
+#### 📋 Configuración
+
+1. **Obtén tu API Key de Google AI Studio**:
+
+    - Ve a https://aistudio.google.com/app/apikey
+    - Crea un nuevo proyecto o usa uno existente
+    - Genera una API Key
+
+2. **Agrega las variables en tu `.env`**:
 
 ```env
 # Clave de API de Google Generative Language (Gemini)
-GEMINI_API_KEY="tu_api_key"
+GEMINI_API_KEY="tu_api_key_aqui"
 
-# Modelo (por defecto: gemini-1.5-flash). Opciones comunes: gemini-1.5-flash, gemini-1.5-pro
+# Modelo a usar (recomendado: gemini-1.5-flash para desarrollo)
+# Opciones: gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp
 GEMINI_MODEL=gemini-1.5-flash
 
-# Timeout de las solicitudes (segundos)
-GEMINI_TIMEOUT=20
+# Timeout de las solicitudes en segundos
+GEMINI_TIMEOUT=30
+
+# Solo para desarrollo en Windows (si hay problemas con certificados SSL)
+# ⚠️ NO usar en producción
+GEMINI_VERIFY_SSL=true
 ```
 
-2. Endpoints relacionados:
+#### 🪟 Configuración SSL en Windows
 
--   `POST /api/lecturas/generar-para-estudiante` (autenticado): Genera una lectura personalizada según el perfil del estudiante, la guarda, crea preguntas y la asigna al estudiante.
--   `POST /api/lecturas/generar-personalizada` (opcionalmente autenticado): Genera una lectura a partir de parámetros (tema, nivel, longitud, tipo) y puede guardarla.
--   `GET /api/lecturas/{lectura_id}/preguntas`: Obtiene las preguntas asociadas a una lectura.
--   `POST /api/lecturas/{lectura_id}/evaluar`: Envía respuestas del usuario y calcula puntuación/progreso.
+Si encuentras el error `SSL certificate problem: unable to get local issuer certificate`:
 
-Si no configuras GEMINI_API_KEY, el sistema usa una simulación local para permitir desarrollo sin dependencias externas.
+**Opción A: Instalar certificados (RECOMENDADO)**
+
+1. Descarga el bundle de certificados: https://curl.se/ca/cacert.pem
+2. Guárdalo en `C:\Php\extras\cacert.pem` (o cualquier ubicación fija)
+3. Edita `C:\Php\php.ini` y agrega/descomenta:
+    ```ini
+    curl.cainfo = "C:\Php\extras\cacert.pem"
+    openssl.cafile = "C:\Php\extras\cacert.pem"
+    ```
+4. Verifica con: `php -i | grep -i "curl.cainfo"`
+5. Reinicia tu servidor web si usas Apache/Nginx
+
+**Opción B: Deshabilitar verificación SSL (SOLO desarrollo)**
+
+En tu `.env`:
+
+```env
+GEMINI_VERIFY_SSL=false
+```
+
+⚠️ **Advertencia**: Esta opción desactiva la validación de certificados. Solo usar temporalmente en desarrollo local.
+
+#### 🎯 Endpoints de IA
+
+##### 1. Generar Lectura para Estudiante (Automática)
+
+`POST /lecturas/generar-para-estudiante`
+
+Genera una lectura personalizada basada en el perfil del estudiante autenticado (nivel, historial, etc.).
+
+**Headers**:
+
+```
+Authorization: Bearer {token_jwt}
+Content-Type: application/json
+```
+
+**Body** (opcional):
+
+```json
+{
+    "tema": "animales",
+    "guardar_en_bd": true
+}
+```
+
+**Parámetros**:
+
+-   `tema` (opcional): Tema de la lectura (ej: "aventura", "animales", "ciencia")
+-   `guardar_en_bd` (opcional, default: true): Si es `true`, guarda la lectura y la asigna automáticamente al estudiante
+
+**Respuesta exitosa**:
+
+```json
+{
+    "success": true,
+    "message": "Lectura generada, guardada y asignada exitosamente con preguntas",
+    "data": {
+        "lectura": {
+            "id": 3,
+            "titulo": "La Gran Aventura del Pequeño Delfín",
+            "contenido": "...",
+            "nivel_dificultad_id": 2,
+            "rango_edad_id": 1,
+            "generada_por_ia": true
+        },
+        "preguntas": [
+            {
+                "id": 5,
+                "lectura_id": 3,
+                "texto": "¿Cómo se llamaba el delfín?",
+                "tipo": "opcion_multiple",
+                "orden": 1,
+                "respuestas": [
+                    {
+                        "id": 17,
+                        "pregunta_id": 5,
+                        "texto": "Saltarín",
+                        "es_correcta": true,
+                        "orden": 1
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+##### 2. Generar Lectura Personalizada
+
+`POST /lecturas/generar-personalizada`
+
+Genera una lectura con parámetros específicos (tema, nivel, longitud, tipo).
+
+**Headers**:
+
+```
+Authorization: Bearer {token_jwt}
+Content-Type: application/json
+```
+
+**Body**:
+
+```json
+{
+    "tema": "dinosaurios",
+    "nivel_dificultad": 3,
+    "longitud": "media",
+    "tipo": "informativo",
+    "guardar_en_bd": true
+}
+```
+
+**Parámetros**:
+
+-   `tema` (requerido): Tema de la lectura
+-   `nivel_dificultad` (requerido): Nivel de 1 a 5
+-   `longitud` (requerido): "corta", "media" o "larga" (también acepta: "muy corta", "mediana", "muy larga")
+-   `tipo` (opcional): "cuento", "informativo" o "poetico" (default: "cuento")
+-   `guardar_en_bd` (opcional, default: true): Si es `true`, guarda y asigna la lectura
+
+**Respuesta exitosa**: Similar al endpoint anterior
+
+##### 3. Obtener Preguntas de una Lectura
+
+`GET /lecturas/{lectura_id}/preguntas`
+
+Obtiene todas las preguntas asociadas a una lectura específica.
+
+**Headers**:
+
+```
+Authorization: Bearer {token_jwt}
+```
+
+**Respuesta**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "lectura": {
+      "id": 3,
+      "titulo": "La Gran Aventura del Pequeño Delfín",
+      "contenido": "..."
+    },
+    "preguntas": [
+      {
+        "id": 5,
+        "lectura_id": 3,
+        "texto_pregunta": "¿Cómo se llamaba el delfín?",
+        "tipo_pregunta": "opcion_multiple",
+        "orden": 1,
+        "respuestas": [...]
+      }
+    ]
+  }
+}
+```
+
+##### 4. Evaluar Respuestas de Lectura
+
+`POST /lecturas/{lectura_id}/evaluar`
+
+Evalúa las respuestas del estudiante y actualiza su progreso.
+
+**Headers**:
+
+```
+Authorization: Bearer {token_jwt}
+Content-Type: application/json
+```
+
+**Body**:
+
+```json
+{
+    "respuestas": [
+        {
+            "pregunta_id": 5,
+            "respuesta_id": 17
+        },
+        {
+            "pregunta_id": 6,
+            "respuesta_id": 22
+        }
+    ],
+    "tiempo_total_segundos": 180
+}
+```
+
+**Respuesta**:
+
+```json
+{
+    "success": true,
+    "message": "Evaluación completada",
+    "data": {
+        "puntuacion": 85.5,
+        "correctas": 3,
+        "total": 4,
+        "detalles": [
+            {
+                "pregunta_id": 5,
+                "respuesta_id": 17,
+                "es_correcta": true
+            }
+        ],
+        "aprobado": true
+    }
+}
+```
+
+##### 5. Obtener Sugerencias para Estudiante
+
+`GET /lecturas/sugerencias/{usuario_id}`
+
+Obtiene temas y configuraciones recomendadas basadas en el historial del estudiante.
+
+**Headers**:
+
+```
+Authorization: Bearer {token_jwt}
+```
+
+**Respuesta**:
+
+```json
+{
+    "success": true,
+    "message": "Sugerencias obtenidas exitosamente",
+    "data": {
+        "sugerencias": {
+            "temas_recomendados": ["aventuras", "animales", "ciencia"],
+            "nivel_sugerido": 2.5,
+            "tipos_preferidos": ["cuento", "informativo"],
+            "longitud_recomendada": "media"
+        }
+    }
+}
+```
+
+#### 📊 Características de la IA
+
+-   **Generación Optimizada**: Una sola llamada genera la lectura completa con preguntas y respuestas
+-   **Personalización Inteligente**: Se adapta al nivel y edad del estudiante
+-   **Tipos de Preguntas**: Incluye preguntas literales, inferenciales y críticas
+-   **Persistencia Automática**: Guarda lecturas, preguntas, respuestas y asigna al estudiante
+-   **Fallback Local**: Si la IA no está disponible, usa contenido simulado para desarrollo
+-   **Normalización de Entrada**: Acepta variantes de los parámetros ("muy corta" → "corta")
+
+#### 🚫 Modo Sin IA
+
+Si no configuras `GEMINI_API_KEY`, el sistema automáticamente:
+
+-   Usa lecturas y preguntas simuladas localmente
+-   Permite desarrollo sin dependencias externas
+-   Mantiene la misma estructura de respuestas
+
+#### 💡 Ejemplo de Uso Completo
+
+```bash
+# 1. Generar lectura para el estudiante autenticado
+curl -X POST http://localhost:8000/lecturas/generar-para-estudiante \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"tema": "aventura", "guardar_en_bd": true}'
+
+# 2. Obtener las preguntas generadas
+curl -X GET http://localhost:8000/lecturas/3/preguntas \
+  -H "Authorization: Bearer $TOKEN"
+
+# 3. Evaluar respuestas del estudiante
+curl -X POST http://localhost:8000/lecturas/3/evaluar \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "respuestas": [
+      {"pregunta_id": 5, "respuesta_id": 17},
+      {"pregunta_id": 6, "respuesta_id": 22}
+    ],
+    "tiempo_total_segundos": 180
+  }'
+```
+
+#### ⚠️ Consideraciones
+
+-   **Cuotas de API**: Google Gemini tiene límites de uso según el tier (gratuito: 15 RPM, 1M TPM)
+-   **Costo**: El tier gratuito permite ~1500 lecturas/día con gemini-1.5-flash
+-   **Modelos Recomendados**:
+    -   Desarrollo: `gemini-1.5-flash` (rápido, económico)
+    -   Producción: `gemini-1.5-pro` (más preciso)
+    -   Experimental: `gemini-2.0-flash-exp` (versión beta con mejoras)
 
 ## 🚨 Seguridad
 

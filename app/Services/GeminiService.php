@@ -14,7 +14,7 @@ class GeminiService
     public function __construct(?string $apiKey = null, ?string $model = null)
     {
         $this->apiKey = $apiKey ?? (string) env('GEMINI_API_KEY', '');
-        $this->model = $model ?? (string) env('GEMINI_MODEL', 'gemini-1.5-flash');
+        $this->model = $model ?? (string) env('GEMINI_MODEL', 'gemini-2.5-flash');
         $this->http = new Client([
             'base_uri' => 'https://generativelanguage.googleapis.com/',
             'timeout' => (float) env('GEMINI_TIMEOUT', 20),
