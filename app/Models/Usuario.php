@@ -24,7 +24,20 @@ class Usuario extends Model implements AuthenticatableContract, JWTSubject
      *
      * @var array
      */
-    protected $fillable = ['num_documento', 'nombre', 'apellido', 'edad', 'correo', 'contrasena_hash', 'codigo_estudiante', 'rol_id', 'institucion_id', 'fecha_creacion', 'estado', 'nivel_actual'];
+    protected $fillable = [
+        'num_documento',
+        'nombre',
+        'apellido',
+        'edad',
+        'correo',
+        'contrasena_hash',
+        'codigo_estudiante',
+        'rol_id',
+        'institucion_id',
+        'fecha_creacion',
+        'estado',
+        'nivel_actual',
+        ];
 
     /**
      * Los atributos que deben ocultarse para arrays.

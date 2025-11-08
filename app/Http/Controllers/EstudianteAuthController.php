@@ -126,9 +126,23 @@ class EstudianteAuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
             'institucion_id' => 'required|exists:instituciones,id',
-            'grado' => 'required|string|max:50',
-            'edad' => 'required|integer|min:4|max:18',
+            // Alinear con frontend: rango 7-18
+                'edad' => 'nullable|integer|min:7|max:18',
+            'con_padres' => 'nullable|boolean',
+            // Si viene con_padres=true, requerimos documento y correo
+            'num_documento' => 'required_if:con_padres,true|nullable|string|max:50',
+            'correo' => 'required_if:con_padres,true|nullable|email|max:100',
+        ], [
+            'apellido.required' => 'El apellido es obligatorio',
+            'institucion_id.required' => 'La institución es obligatoria',
+            'institucion_id.exists' => 'La institución seleccionada no existe',
+                'edad.min' => 'La edad mínima es 7 años',
+                'edad.max' => 'La edad máxima es 18 años',
+            'num_documento.required_if' => 'El número de documento es obligatorio si está con un adulto',
+            'correo.required_if' => 'El correo es obligatorio si está con un adulto',
+            'correo.email' => 'El correo debe tener un formato válido',
         ]);
 
         if ($validator->fails()) {
@@ -140,17 +154,41 @@ class EstudianteAuthController extends Controller
         }
 
         try {
+            $conPadres = filter_var($request->input('con_padres', false), FILTER_VALIDATE_BOOLEAN);
+
+            // Generar código único para el estudiante
+            $codigo = Usuario::generarCodigoEstudiante($request->institucion_id, $request->nombre, $request->apellido);
+
+                // Edad puede ser nula si el estudiante no la recuerda
+                $edadValue = $request->filled('edad') ? (int) $request->edad : null;
+
+                // Generar una contraseña por defecto (no nula) usando nombre + edad cuando esté disponible
+                $plainPassword = $request->nombre . ($edadValue !== null ? $edadValue : rand(1000, 9999));
+                $passwordHash = Hash::make($plainPassword);
+
             $estudiante = Usuario::create([
+                'num_documento' => $conPadres ? ($request->input('num_documento') ?? null) : null,
                 'nombre' => $request->nombre,
-                'institucion_id' => $request->institucion_id,
-                'rol_id' => 3, // rol_id 3 es para estudiantes
-                'grado' => $request->grado,
-                'edad' => $request->edad,
-                'estado' => true,
+                'apellido' => $request->apellido,
+                    'edad' => $edadValue,
+                'correo' => $conPadres ? ($request->input('correo') ?? null) : null,
+                'codigo_estudiante' => $codigo,
+                'rol_id' => 3, // Estudiante
+                'institucion_id' => (int) $request->institucion_id,
                 'fecha_creacion' => Carbon::now(),
+                'estado' => true,
+                'nivel_actual' => 1,
+                    'contrasena_hash' => $passwordHash,
             ]);
 
             $token = JWTAuth::fromUser($estudiante);
+
+            // Obtener nombre de institución para responder como espera el frontend
+            $institucionNombre = null;
+            if ($estudiante->institucion_id) {
+                $institucion = Institucion::find($estudiante->institucion_id);
+                $institucionNombre = $institucion?->nombre;
+            }
 
             return response()->json([
                 'success' => true,
@@ -159,10 +197,14 @@ class EstudianteAuthController extends Controller
                     'estudiante' => [
                         'id' => $estudiante->id,
                         'nombre' => $estudiante->nombre,
-                        'institucion_id' => $estudiante->institucion_id,
-                        'rol_id' => $estudiante->rol_id,
-                        'grado' => $estudiante->grado,
+                        'apellido' => $estudiante->apellido,
+                        'codigo_estudiante' => $estudiante->codigo_estudiante,
                         'edad' => $estudiante->edad,
+                        'num_documento' => $estudiante->num_documento,
+                        'correo' => $estudiante->correo,
+                        'institucion_id' => $estudiante->institucion_id,
+                        'institucion' => $institucionNombre,
+                        'estado' => (bool) $estudiante->estado,
                     ],
                     'token' => $token,
                     'token_type' => 'bearer',
@@ -199,7 +241,7 @@ class EstudianteAuthController extends Controller
                 ->where('institucion_id', $request->institucion_id)
                 ->where('rol_id', 3)
                 ->where('estado', true)
-                ->select('id', 'nombre', 'grado', 'edad')
+                ->select('id', 'nombre', 'edad')
                 ->get();
 
             return response()->json([
@@ -261,7 +303,6 @@ class EstudianteAuthController extends Controller
                         'nombre' => $estudiante->nombre,
                         'institucion_id' => $estudiante->institucion_id,
                         'rol_id' => $estudiante->rol_id,
-                        'grado' => $estudiante->grado,
                         'edad' => $estudiante->edad,
                         'fecha_creacion' => $estudiante->fecha_creacion,
                     ]
