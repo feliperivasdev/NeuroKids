@@ -88,6 +88,13 @@ class EstudianteAuthController extends Controller
                 ->where('estado', true)
                 ->first();
 
+            // Añadir apellido y edad en la respuesta. También nombre institución para consistencia con registro
+            $institucionNombre = null;
+            if ($estudiante) {
+                $institucion = Institucion::find($estudiante->institucion_id);
+                $institucionNombre = $institucion?->nombre;
+            }
+
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
@@ -104,8 +111,13 @@ class EstudianteAuthController extends Controller
                     'estudiante' => [
                         'id' => $estudiante->id,
                         'nombre' => $estudiante->nombre,
+                        'apellido' => $estudiante->apellido,
+                        'edad' => $estudiante->edad,
+                        'codigo_estudiante' => $estudiante->codigo_estudiante,
                         'institucion_id' => $estudiante->institucion_id,
+                        'institucion' => $institucionNombre,
                         'rol_id' => $estudiante->rol_id,
+                        'estado' => (bool) $estudiante->estado,
                     ],
                     'token' => $token,
                     'token_type' => 'bearer',
@@ -199,7 +211,7 @@ class EstudianteAuthController extends Controller
                         'nombre' => $estudiante->nombre,
                         'apellido' => $estudiante->apellido,
                         'codigo_estudiante' => $estudiante->codigo_estudiante,
-                        'edad' => $estudiante->edad,
+                        'edad' => $estudiante->edad ?? null, // Asegurar que edad se envíe aunque sea null
                         'num_documento' => $estudiante->num_documento,
                         'correo' => $estudiante->correo,
                         'institucion_id' => $estudiante->institucion_id,
